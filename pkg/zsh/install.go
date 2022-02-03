@@ -8,8 +8,8 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/rs/zerolog/log"
 
-	"github.com/alex-held/dfctl-zsh/pkg/config"
-	"github.com/alex-held/dfctl-zsh/pkg/dfpath"
+	"github.com/alex-held/dfctl/pkg/config"
+	"github.com/alex-held/dfctl/pkg/dfpath"
 )
 
 type Theme struct {

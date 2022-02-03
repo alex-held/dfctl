@@ -3,8 +3,8 @@ package cli
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/alex-held/dfctl-zsh/pkg/cli/config"
-	"github.com/alex-held/dfctl-zsh/pkg/cli/zsh"
+	"github.com/alex-held/dfctl/pkg/cli/config"
+	"github.com/alex-held/dfctl/pkg/cli/zsh"
 )
 
 func NewRootCommand() (cmd *cobra.Command) {

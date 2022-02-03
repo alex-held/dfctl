@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/alex-held/dfctl-zsh/pkg/zsh"
+	"github.com/alex-held/dfctl/pkg/zsh"
 )
 
 func newSourceCommand() (cmd *cobra.Command) {

@@ -1,4 +1,4 @@
-module github.com/alex-held/dfctl-zsh
+module github.com/alex-held/dfctl
 
 go 1.17
 

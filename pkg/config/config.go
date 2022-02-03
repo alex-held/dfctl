@@ -8,7 +8,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 
-	"github.com/alex-held/dfctl-zsh/pkg/dfpath"
+	"github.com/alex-held/dfctl/pkg/dfpath"
 )
 
 type OhMyZshPluginSpec struct {

@@ -7,7 +7,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 
-	"github.com/alex-held/dfctl-zsh/pkg/zsh"
+	"github.com/alex-held/dfctl/pkg/zsh"
 )
 
 func newPluginsCommand() (cmd *cobra.Command) {

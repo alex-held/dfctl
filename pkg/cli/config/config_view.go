@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/alex-held/dfctl-zsh/pkg/config"
+	"github.com/alex-held/dfctl/pkg/config"
 )
 
 func newViewCommand() (cmd *cobra.Command) {

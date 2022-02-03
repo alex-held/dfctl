@@ -5,7 +5,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/alex-held/dfctl-zsh/pkg/cli"
+	"github.com/alex-held/dfctl/pkg/cli"
 )
 
 func main() {

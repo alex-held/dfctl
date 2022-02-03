@@ -4,8 +4,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/alex-held/dfctl-zsh/pkg/config"
-	"github.com/alex-held/dfctl-zsh/pkg/dfpath"
+	"github.com/alex-held/dfctl/pkg/config"
+	"github.com/alex-held/dfctl/pkg/dfpath"
 )
 
 func Source() (rendered string, err error) {

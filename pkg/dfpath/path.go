@@ -3,7 +3,7 @@ package dfpath
 import (
 	"path/filepath"
 
-	"github.com/alex-held/dfctl-zsh/pkg/env"
+	"github.com/alex-held/dfctl/pkg/env"
 )
 
 func Home() string       { return env.MustLoad().Home }

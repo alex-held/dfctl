@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/alex-held/dfctl-zsh/pkg/dfpath"
+	"github.com/alex-held/dfctl/pkg/dfpath"
 )
 
 func newPathCommand() (cmd *cobra.Command) {

@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/alex-held/dfctl-zsh/pkg/config"
+	"github.com/alex-held/dfctl/pkg/config"
 )
 
 func TestRender(t *testing.T) {

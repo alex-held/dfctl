@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/alex-held/dfctl-zsh/pkg/config"
-	"github.com/alex-held/dfctl-zsh/pkg/env"
+	"github.com/alex-held/dfctl/pkg/config"
+	"github.com/alex-held/dfctl/pkg/env"
 )
 
 func TestPlugin_Clone(t *testing.T) {

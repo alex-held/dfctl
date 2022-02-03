@@ -4,7 +4,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
-	"github.com/alex-held/dfctl-zsh/pkg/zsh"
+	"github.com/alex-held/dfctl/pkg/zsh"
 )
 
 func newInstallCommand() (cmd *cobra.Command) {
