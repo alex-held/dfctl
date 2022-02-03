@@ -6,6 +6,7 @@ require (
 	github.com/BurntSushi/toml v1.0.0
 	github.com/ahmetb/go-linq v3.0.0+incompatible
 	github.com/go-git/go-git/v5 v5.4.2
+	github.com/olekukonko/tablewriter v0.0.5
 	github.com/rs/zerolog v1.26.1
 	github.com/sethvargo/go-envconfig v0.4.0
 	github.com/spf13/cobra v1.3.0
@@ -26,7 +27,6 @@ require (
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
-	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
