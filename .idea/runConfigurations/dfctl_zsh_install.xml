@@ -14,7 +14,7 @@
       </ENTRIES>
     </EXTENSION>
     <kind value="PACKAGE" />
-    <package value="github.com/alex-held/dfctl-zsh" />
+    <package value="github.com/alex-held/dfctl" />
     <directory value="$PROJECT_DIR$" />
     <filePath value="$PROJECT_DIR$" />
     <method v="2" />
