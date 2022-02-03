@@ -2,11 +2,15 @@ package config
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/BurntSushi/toml"
+	"github.com/rs/zerolog/log"
 
 	"github.com/alex-held/dfctl/pkg/dfpath"
 )
@@ -33,10 +37,64 @@ const (
 	PLUGIN_OMZ    PluginKind = "omz"
 )
 
-type PluginsSpec []PluginSpec
+type PluginsList []PluginSpec
+type PluginsSpec struct {
+	OMZ    []string    `json:"omz,omitempty"`
+	Custom PluginsList `json:"custom,omitempty"`
+}
+
+func ParsePluginKind(kindStr string) PluginKind {
+	var kind PluginKind
+	switch strings.ToLower(kindStr) {
+	case "omz":
+		kind = PLUGIN_OMZ
+	case "git":
+		kind = PLUGIN_GIT
+	case "gh":
+		kind = PLUGIN_GITHUB
+	default:
+		err := fmt.Errorf("kind %s is not supported", kindStr)
+		log.Error().Err(err).Msgf("failed to parse PluginKind")
+		panic(err)
+	}
+	return kind
+}
+
+type PluginURN string
+
+func (p PluginURN) GetScheme() PluginKind {
+	urn := string(p)
+	i := strings.Index(urn, ":")
+	scheme := urn[:i]
+	return ParsePluginKind(scheme)
+}
+
+func (p PluginURN) GetURI() string {
+	urn := string(p)
+	i := strings.Index(urn, ":")
+	uri := urn[i+1:]
+	if strings.Count(uri, "/") == 2 {
+		return "https://github.com/" + uri
+	}
+	return uri
+}
+
+func (p PluginURN) GetID() string {
+	uri := p.GetURI()
+	return path.Base(uri)
+}
+
+func (s *PluginsSpec) ContainsOMZ(id string) bool {
+	for _, plugin := range s.OMZ {
+		if plugin == id {
+			return true
+		}
+	}
+	return false
+}
 
 func (s *PluginsSpec) ContainsWithRepo(repo string, kind PluginKind) bool {
-	for _, pluginSpec := range *s {
+	for _, pluginSpec := range s.Custom {
 		if pluginSpec.Kind == kind && pluginSpec.Repo == repo {
 			return true
 		}

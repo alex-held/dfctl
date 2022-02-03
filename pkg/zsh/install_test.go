@@ -50,17 +50,19 @@ func TestInstallPlugin(t *testing.T) {
 	log := testutils.Logger(t)
 	cfg := &config.ConfigSpec{
 		Plugins: config.PluginsSpec{
-			{
-				ID:   "zsh-autosuggestions",
-				Name: "zsh-autosuggestions",
-				Repo: "zsh-users/zsh-autosuggestions",
-				Kind: config.PLUGIN_GITHUB,
-			},
-			{
-				ID:   "fast-syntax-highlighting",
-				Name: "fast-syntax-highlighting",
-				Repo: "zdharma/fast-syntax-highlighting",
-				Kind: config.PLUGIN_GITHUB,
+			Custom: config.PluginsList{
+				{
+					ID:   "zsh-autosuggestions",
+					Name: "zsh-autosuggestions",
+					Repo: "zsh-users/zsh-autosuggestions",
+					Kind: config.PLUGIN_GITHUB,
+				},
+				{
+					ID:   "fast-syntax-highlighting",
+					Name: "fast-syntax-highlighting",
+					Repo: "zdharma/fast-syntax-highlighting",
+					Kind: config.PLUGIN_GITHUB,
+				},
 			},
 		},
 	}
@@ -88,17 +90,20 @@ func TestListInstallable(t *testing.T) {
 
 	cfg := &config.ConfigSpec{
 		Plugins: config.PluginsSpec{
-			{
-				ID:   "zsh-autosuggestions",
-				Name: "zsh-autosuggestions",
-				Repo: "zsh-users/zsh-autosuggestions",
-				Kind: config.PLUGIN_GITHUB,
-			},
-			{
-				ID:   "fast-syntax-highlighting",
-				Name: "fast-syntax-highlighting",
-				Repo: "zdharma/fast-syntax-highlighting",
-				Kind: config.PLUGIN_GITHUB,
+			Custom: config.PluginsList{
+
+				{
+					ID:   "zsh-autosuggestions",
+					Name: "zsh-autosuggestions",
+					Repo: "zsh-users/zsh-autosuggestions",
+					Kind: config.PLUGIN_GITHUB,
+				},
+				{
+					ID:   "fast-syntax-highlighting",
+					Name: "fast-syntax-highlighting",
+					Repo: "zdharma/fast-syntax-highlighting",
+					Kind: config.PLUGIN_GITHUB,
+				},
 			},
 		},
 	}
@@ -126,17 +131,19 @@ func TestListUninstalled(t *testing.T) {
 
 	cfg := &config.ConfigSpec{
 		Plugins: config.PluginsSpec{
-			{
-				ID:   "zsh-autosuggestions",
-				Name: "zsh-autosuggestions",
-				Repo: "zsh-users/zsh-autosuggestions",
-				Kind: config.PLUGIN_GITHUB,
-			},
-			{
-				ID:   "fast-syntax-highlighting",
-				Name: "fast-syntax-highlighting",
-				Repo: "zdharma-continuum/fast-syntax-highlighting",
-				Kind: config.PLUGIN_GITHUB,
+			Custom: config.PluginsList{
+				{
+					ID:   "zsh-autosuggestions",
+					Name: "zsh-autosuggestions",
+					Repo: "zsh-users/zsh-autosuggestions",
+					Kind: config.PLUGIN_GITHUB,
+				},
+				{
+					ID:   "fast-syntax-highlighting",
+					Name: "fast-syntax-highlighting",
+					Repo: "zdharma-continuum/fast-syntax-highlighting",
+					Kind: config.PLUGIN_GITHUB,
+				},
 			},
 		},
 	}

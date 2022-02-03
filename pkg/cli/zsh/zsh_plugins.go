@@ -90,7 +90,14 @@ func formatOutput(installables []zsh.Installable, outputFormat string, cmd *cobr
 		data := [][]string{}
 
 		linq.From(installables).SelectT(func(i zsh.Installable) []string {
-			return []string{i.Id(), fmt.Sprintf("%v", i.(*zsh.Plugin).Kind), fmt.Sprintf("%v", i.GetKind()), fmt.Sprintf("%v", i.IsInstalled())}
+			var kind string
+			switch it := i.(type) {
+			case *zsh.Plugin:
+				kind = string(it.Kind)
+			case *zsh.OMZPlugin:
+				kind = "omz"
+			}
+			return []string{i.Id(), fmt.Sprintf("%s", kind), fmt.Sprintf("%v", i.GetKind()), fmt.Sprintf("%v", i.IsInstalled())}
 		}).ToSlice(&data)
 
 		table := tablewriter.NewWriter(cmd.OutOrStderr())

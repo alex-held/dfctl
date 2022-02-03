@@ -79,11 +79,35 @@ func Install(installables ...Installable) (results map[Installable]InstallResult
 
 func InstallPlugins(cfg *config.ConfigSpec) (results map[Plugin]InstallResult) {
 	results = map[Plugin]InstallResult{}
-	for _, plugin := range cfg.Plugins {
+	for _, plugin := range cfg.Plugins.Custom {
 		p := PluginFromSpec(&plugin)
 		results[*p] = p.Install()
 	}
 	return results
+}
+
+type OMZPlugin struct {
+	id string
+}
+
+func (p *OMZPlugin) Id() string {
+	return p.id
+}
+
+func (p *OMZPlugin) Install() (result InstallResult) {
+	return InstallResult{Installed: false}
+}
+
+func (p *OMZPlugin) IsInstalled() bool {
+	return true
+}
+
+func (p *OMZPlugin) Path() string {
+	return filepath.Join(dfpath.OMZ(), "plugins", p.Id())
+}
+
+func (p *OMZPlugin) GetKind() InstallableKind {
+	return PluginKind
 }
 
 func QueryInstallable() (query linq.Query) {
@@ -98,11 +122,16 @@ func QueryInstallable() (query linq.Query) {
 			return &Theme{&theme}
 		}).
 		Concat(linq.
-			From(cfg.Plugins).
+			From(cfg.Plugins.Custom).
 			SelectT(func(plugin config.PluginSpec) Installable {
 				return PluginFromSpec(&plugin)
 			}),
-		)
+		).
+		Concat(linq.
+			From(cfg.Plugins.OMZ).
+			SelectT(func(plugin string) Installable {
+				return &OMZPlugin{id: plugin}
+			}))
 }
 
 func ListInstallables(predicateFns ...InstallablePredicateFn) (result []Installable) {

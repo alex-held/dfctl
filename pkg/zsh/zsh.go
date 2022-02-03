@@ -4,6 +4,8 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/ahmetb/go-linq"
+
 	"github.com/alex-held/dfctl/pkg/config"
 	"github.com/alex-held/dfctl/pkg/dfpath"
 )
@@ -29,6 +31,7 @@ func render(cfg *config.ConfigSpec) (rendered string, err error) {
 		OMZ_HOME    string
 		Theme       string
 		Plugins     []string
+		OMZPlugins  []string
 		Paths       []string
 		Exports     map[string]string
 		Aliases     map[string]string
@@ -48,14 +51,11 @@ func render(cfg *config.ConfigSpec) (rendered string, err error) {
 		UserConfigs: cfg.Configs.User,
 		ZshOptions:  cfg.Configs.ZshOptions,
 		OMZConfigs:  cfg.Configs.OMZ,
+		OMZPlugins:  cfg.Plugins.OMZ,
 	}
 
-	q, err := PluginsQuery()
-	if err != nil {
-		return rendered, err
-	}
-	q.SelectT(func(p *Plugin) string {
-		return p.PluginName()
+	linq.From(cfg.Plugins.Custom).SelectT(func(spec config.PluginSpec) string {
+		return spec.ID
 	}).ToSlice(&data.Plugins)
 
 	sb := &strings.Builder{}
@@ -74,6 +74,7 @@ var tmpl = `
 ##
 export ZSH="{{ .OMZ_HOME }}"
 
+
 ###############################################################################
 # EXPORTS
 ##
@@ -82,6 +83,7 @@ export ZSH="{{ .OMZ_HOME }}"
 export {{ $key }}="{{ $val -}}"
 {{- end -}}
 {{ end }}
+
 
 ###############################################################################
 # PATH
@@ -112,6 +114,12 @@ ZSH_THEME="{{ .Theme }}"
 # PLUGINS
 ##
 plugins=(
+		# OMZ
+		{{- range $omz := .OMZPlugins }}
+		{{ $omz -}}
+		{{ end }}
+
+		# CUSTOM
         {{- range $plugin := .Plugins }}
 		{{ $plugin -}}
 		{{ end }}
@@ -120,13 +128,14 @@ plugins=(
 
 source $ZSH/oh-my-zsh.sh
 
+
 ###############################################################################
 # USER CONFIG
 ##
 {{- if .UserConfigs }}
 {{- range $key, $val := .UserConfigs }}
 export {{ $key }}="{{ $val -}}"
-{{ end -}}
+{{- end -}}
 {{ end }}
 
 
@@ -140,7 +149,6 @@ alias {{ $alias }}="{{ $command }}"
 {{ end }}
 
 
-
 ###############################################################################
 # OPTIONS
 ##
@@ -149,7 +157,6 @@ alias {{ $alias }}="{{ $command }}"
 {{ if $enabled }}setopt {{ $option -}} {{ else }}unsetopt {{ $option -}} {{ end -}}
 {{ end -}}
 {{ end }}
-
 
 
 ###############################################################################

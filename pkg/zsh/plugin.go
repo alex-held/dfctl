@@ -49,25 +49,8 @@ func NewPlugin(repoUrn string, id, name *string) (p *Plugin) {
 		ID:   *id,
 		Name: *name,
 		Repo: repo,
-		Kind: ParsePluginKind(kindStr),
+		Kind: config.ParsePluginKind(kindStr),
 	}
-}
-
-func ParsePluginKind(kindStr string) config.PluginKind {
-	var kind config.PluginKind
-	switch strings.ToLower(kindStr) {
-	case "omz":
-		kind = config.PLUGIN_OMZ
-	case "git":
-		kind = config.PLUGIN_GIT
-	case "gh":
-		kind = config.PLUGIN_GITHUB
-	default:
-		err := fmt.Errorf("kind %s is not supported", kindStr)
-		log.Error().Err(err).Msgf("failed to parse PluginKind")
-		panic(err)
-	}
-	return kind
 }
 
 func (p *Plugin) Spec() *config.PluginSpec {
@@ -135,7 +118,7 @@ func (p *Plugin) Install() (res InstallResult) {
 		return InstallResult{Installed: true}
 	}
 
-	cfg.Plugins = append(cfg.Plugins, *p.Spec())
+	cfg.Plugins.Custom = append(cfg.Plugins.Custom, *p.Spec())
 	if err := config.Save(cfg); err != nil {
 		log.Error().Err(err).Msgf("unable to save plugin %s to config file", p.ID)
 		return InstallResult{Installed: true, Err: err}
