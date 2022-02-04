@@ -5,14 +5,14 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/alex-held/dfctl/pkg/config"
+	"github.com/alex-held/dfctl/pkg/zsh"
 )
 
 func newViewCommand() (cmd *cobra.Command) {
 	cmd = &cobra.Command{
 		Use: "view",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg, err := config.Load()
+			cfg, err := zsh.Load()
 			if err != nil {
 				return err
 			}

@@ -5,12 +5,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	"github.com/alex-held/dfctl/pkg/config"
 )
 
 func TestRender(t *testing.T) {
-	cfg := &config.ConfigSpec{
+	cfg := &ConfigSpec{
 		Theme: "powerlevel10k/powerlevel10k",
 		Exports: map[string]string{
 			"GOPATH":                          "$HOME/go",
@@ -33,7 +31,7 @@ func TestRender(t *testing.T) {
 			"FZF_DEFAULT_OPTS":                "--ansi --layout=default --info=inline --height=50% --multi --preview-window=right:50% --preview-window=sharp --preview-window=cycle --preview '([[ -f {} ]] && (bat --style=numbers --color=always --theme=gruvbox-dark --line-range :500 {} || cat {})) || ([[ -d {} ]] && (tree -C {} | less)) || echo {} 2> /dev/null | head -200' --prompt='λ -> ' --pointer='|>' --marker='✓' --bind 'ctrl-e:execute(nvim {} < /dev/tty > /dev/tty 2>&1)' > selected --bind 'ctrl-v:execute(code {+})'",
 			"FZF_CTRL_T_COMMAND":              "$FZF_DEFAULT_COMMAND",
 		},
-		Plugins: config.PluginsSpec{
+		Plugins: PluginsSpec{
 			OMZ: []string{
 				"ag",
 				"autojump",
@@ -59,57 +57,51 @@ func TestRender(t *testing.T) {
 				"sudo",
 				"yarn",
 			},
-			Custom: config.PluginsList{
+			Custom: PluginsList{
 				{
 					ID:   "zsh-autosuggestions",
 					Name: "zsh-autosuggestions",
 					Repo: "zsh-users/zsh-autosuggestions",
-					Kind: config.PLUGIN_GITHUB,
+					Kind: PLUGIN_GITHUB,
 				},
 				{
 					ID:   "zsh-completions",
 					Name: "zsh-completions",
 					Repo: "zsh-users/zsh-completions",
-					Kind: config.PLUGIN_GITHUB,
+					Kind: PLUGIN_GITHUB,
 				},
-				// {
-				// 	ID:   "zstyle-completions",
-				// 	Name: "zstyle-completions",
-				// 	Repo: "zshzoo/zstyle-completions",
-				// 	Kind: config.PLUGIN_GITHUB,
-				// },
 				{
 					ID:   "fast-syntax-highlighting",
 					Name: "fast-syntax-highlighting",
 					Repo: "zdharma-continuum/fast-syntax-highlighting",
-					Kind: config.PLUGIN_GITHUB,
+					Kind: PLUGIN_GITHUB,
 				},
 				{
 					ID:   "zsh-fzf-history-search",
 					Name: "zsh-fzf-history-search",
 					Repo: "joshskidmore/zsh-fzf-history-search",
-					Kind: config.PLUGIN_GITHUB,
+					Kind: PLUGIN_GITHUB,
 				},
 				{
 					ID:   "fzf-tab",
 					Name: "fzf-tab",
 					Repo: "Aloxaf/fzf-tab",
-					Kind: config.PLUGIN_GITHUB,
+					Kind: PLUGIN_GITHUB,
 				},
 				{
 					ID:   "zfzf",
 					Name: "zfzf",
 					Repo: "b0o/zfzf",
-					Kind: config.PLUGIN_GITHUB,
+					Kind: PLUGIN_GITHUB,
 				},
 			},
 		},
-		Themes: config.ThemesSpec{
+		Themes: ThemesSpec{
 			{
 				ID:   "powerlevel10k/powerlevel10k",
 				Name: "powerlevel10k",
 				Repo: "romkatv/powerlevel10k",
-				Kind: config.PLUGIN_GITHUB,
+				Kind: PLUGIN_GITHUB,
 			},
 		},
 		Aliases: map[string]string{
@@ -128,12 +120,12 @@ func TestRender(t *testing.T) {
 			"sudo":      "sudo ",
 			"flush":     "dscacheutil -flushcache && killall -HUP mDNSResponder",
 		},
-		Source: config.SourceSpec{
+		Source: SourceSpec{
 			Post: []string{
 				"~/.p10k.zsh",
 			},
 		},
-		Configs: config.ConfigsSpec{
+		Configs: ConfigsSpec{
 			ZshOptions: map[string]bool{
 				"BEEP":             false,
 				"no_beep":          true,
@@ -174,8 +166,8 @@ func TestRender(t *testing.T) {
 		},
 	}
 
-	_ = config.SaveToPath(cfg, "/Users/dev/tmp/dfctl.toml")
-	_ = config.Save(cfg)
+	_ = SaveToPath(cfg, "/Users/dev/tmp/dfctl.toml")
+	_ = Save(cfg)
 	rendered, err := render(cfg)
 	assert.NoError(t, err)
 

@@ -8,7 +8,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/alex-held/dfctl/pkg/config"
 	"github.com/alex-held/dfctl/pkg/env"
 	"github.com/alex-held/dfctl/pkg/testutils"
 )
@@ -16,13 +15,13 @@ import (
 func TestInstallThemes(t *testing.T) {
 	log := testutils.Logger(t)
 
-	cfg := &config.ConfigSpec{
-		Themes: config.ThemesSpec{
+	cfg := &ConfigSpec{
+		Themes: ThemesSpec{
 			{
 				ID:   "powerlevel10k/powerlevel10k",
 				Name: "powerlevel10k",
 				Repo: "romkatv/powerlevel10k",
-				Kind: config.PLUGIN_GITHUB,
+				Kind: PLUGIN_GITHUB,
 			},
 		},
 	}
@@ -48,20 +47,20 @@ func TestInstallThemes(t *testing.T) {
 
 func TestInstallPlugin(t *testing.T) {
 	log := testutils.Logger(t)
-	cfg := &config.ConfigSpec{
-		Plugins: config.PluginsSpec{
-			Custom: config.PluginsList{
+	cfg := &ConfigSpec{
+		Plugins: PluginsSpec{
+			Custom: PluginsList{
 				{
 					ID:   "zsh-autosuggestions",
 					Name: "zsh-autosuggestions",
 					Repo: "zsh-users/zsh-autosuggestions",
-					Kind: config.PLUGIN_GITHUB,
+					Kind: PLUGIN_GITHUB,
 				},
 				{
 					ID:   "fast-syntax-highlighting",
 					Name: "fast-syntax-highlighting",
 					Repo: "zdharma/fast-syntax-highlighting",
-					Kind: config.PLUGIN_GITHUB,
+					Kind: PLUGIN_GITHUB,
 				},
 			},
 		},
@@ -88,21 +87,21 @@ func TestInstallPlugin(t *testing.T) {
 func TestListInstallable(t *testing.T) {
 	log := testutils.Logger(t)
 
-	cfg := &config.ConfigSpec{
-		Plugins: config.PluginsSpec{
-			Custom: config.PluginsList{
+	cfg := &ConfigSpec{
+		Plugins: PluginsSpec{
+			Custom: PluginsList{
 
 				{
 					ID:   "zsh-autosuggestions",
 					Name: "zsh-autosuggestions",
 					Repo: "zsh-users/zsh-autosuggestions",
-					Kind: config.PLUGIN_GITHUB,
+					Kind: PLUGIN_GITHUB,
 				},
 				{
 					ID:   "fast-syntax-highlighting",
 					Name: "fast-syntax-highlighting",
 					Repo: "zdharma/fast-syntax-highlighting",
-					Kind: config.PLUGIN_GITHUB,
+					Kind: PLUGIN_GITHUB,
 				},
 			},
 		},
@@ -116,7 +115,7 @@ func TestListInstallable(t *testing.T) {
 		Config: configFileDir,
 	})
 
-	err := config.SaveToPath(cfg, configFileDir)
+	err := SaveToPath(cfg, configFileDir)
 	assert.NoError(t, err)
 
 	installables := ListInstallables()
@@ -129,20 +128,20 @@ func TestListInstallable(t *testing.T) {
 func TestListUninstalled(t *testing.T) {
 	log := testutils.Logger(t)
 
-	cfg := &config.ConfigSpec{
-		Plugins: config.PluginsSpec{
-			Custom: config.PluginsList{
+	cfg := &ConfigSpec{
+		Plugins: PluginsSpec{
+			Custom: PluginsList{
 				{
 					ID:   "zsh-autosuggestions",
 					Name: "zsh-autosuggestions",
 					Repo: "zsh-users/zsh-autosuggestions",
-					Kind: config.PLUGIN_GITHUB,
+					Kind: PLUGIN_GITHUB,
 				},
 				{
 					ID:   "fast-syntax-highlighting",
 					Name: "fast-syntax-highlighting",
 					Repo: "zdharma-continuum/fast-syntax-highlighting",
-					Kind: config.PLUGIN_GITHUB,
+					Kind: PLUGIN_GITHUB,
 				},
 			},
 		},
@@ -156,7 +155,7 @@ func TestListUninstalled(t *testing.T) {
 		Config: configFileDir,
 	})
 
-	err := config.SaveToPath(cfg, configFileDir)
+	err := SaveToPath(cfg, configFileDir)
 	assert.NoError(t, err)
 
 	uninstalledBefore := ListUninstalled()

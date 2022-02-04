@@ -1,4 +1,4 @@
-package config
+package zsh
 
 import (
 	"bytes"
@@ -15,36 +15,52 @@ import (
 	"github.com/alex-held/dfctl/pkg/dfpath"
 )
 
-type OhMyZshPluginSpec struct {
-	Name string
-	URL  string
-}
-
-type OhMyZshPluginsSpec []OhMyZshPluginSpec
-
 type PluginSpec struct {
-	ID   string     `toml:"id,omitempty"`
-	Repo string     `toml:"repo,omitempty"`
-	Name string     `toml:"name,omitempty"`
-	Kind PluginKind `toml:"kind,omitempty"`
+	ID      string   `toml:"id,omitempty"`
+	Repo    string   `toml:"repo,omitempty"`
+	Name    string   `toml:"name,omitempty"`
+	Kind    RepoKind `toml:"kind,omitempty"`
+	Enabled bool     `toml:"enabled,omitempty"`
 }
 
-type PluginKind string
+type RepoKind string
+
+func (k *RepoKind) Order() int {
+	switch *k {
+	case PLUGIN_GITHUB:
+		return 0
+	case PLUGIN_GIT:
+		return 1
+	case PLUGIN_OMZ:
+		return 2
+	default:
+		return 1000
+	}
+}
 
 const (
-	PLUGIN_GITHUB PluginKind = "github"
-	PLUGIN_GIT    PluginKind = "git"
-	PLUGIN_OMZ    PluginKind = "omz"
+	PLUGIN_GITHUB RepoKind = "github"
+	PLUGIN_GIT    RepoKind = "git"
+	PLUGIN_OMZ    RepoKind = "omz"
 )
 
 type PluginsList []PluginSpec
 type PluginsSpec struct {
-	OMZ    []string    `json:"omz,omitempty"`
+	OMZ    []OMZPlugin `json:"omz,omitempty"`
 	Custom PluginsList `json:"custom,omitempty"`
 }
 
-func ParsePluginKind(kindStr string) PluginKind {
-	var kind PluginKind
+func (s PluginsSpec) GetOMZ(id string) (omz *OMZPlugin, ok bool) {
+	for _, omzPlugin := range s.OMZ {
+		if omzPlugin.ID == id {
+			return &omzPlugin, true
+		}
+	}
+	return nil, false
+}
+
+func ParsePluginKind(kindStr string) RepoKind {
+	var kind RepoKind
 	switch strings.ToLower(kindStr) {
 	case "omz":
 		kind = PLUGIN_OMZ
@@ -54,7 +70,7 @@ func ParsePluginKind(kindStr string) PluginKind {
 		kind = PLUGIN_GITHUB
 	default:
 		err := fmt.Errorf("kind %s is not supported", kindStr)
-		log.Error().Err(err).Msgf("failed to parse PluginKind")
+		log.Error().Err(err).Msgf("failed to parse RepoKind")
 		panic(err)
 	}
 	return kind
@@ -62,7 +78,7 @@ func ParsePluginKind(kindStr string) PluginKind {
 
 type PluginURN string
 
-func (p PluginURN) GetScheme() PluginKind {
+func (p PluginURN) GetScheme() RepoKind {
 	urn := string(p)
 	i := strings.Index(urn, ":")
 	scheme := urn[:i]
@@ -86,14 +102,14 @@ func (p PluginURN) GetID() string {
 
 func (s *PluginsSpec) ContainsOMZ(id string) bool {
 	for _, plugin := range s.OMZ {
-		if plugin == id {
+		if plugin.ID == id {
 			return true
 		}
 	}
 	return false
 }
 
-func (s *PluginsSpec) ContainsWithRepo(repo string, kind PluginKind) bool {
+func (s *PluginsSpec) ContainsWithRepo(repo string, kind RepoKind) bool {
 	for _, pluginSpec := range s.Custom {
 		if pluginSpec.Kind == kind && pluginSpec.Repo == repo {
 			return true
@@ -116,10 +132,10 @@ type ConfigsSpec struct {
 
 type ThemesSpec []ThemeSpec
 type ThemeSpec struct {
-	ID   string     `toml:"id,omitempty"`
-	Name string     `toml:"name,omitempty"`
-	Repo string     `toml:"repo,omitempty"`
-	Kind PluginKind `toml:"kind,omitempty"`
+	ID   string   `toml:"id,omitempty"`
+	Name string   `toml:"name,omitempty"`
+	Repo string   `toml:"repo,omitempty"`
+	Kind RepoKind `toml:"kind,omitempty"`
 }
 
 type ConfigSpec struct {
@@ -181,6 +197,28 @@ func MustLoadFromPath(path string) (cfg *ConfigSpec) {
 	return cfg
 }
 
+func Default() (cfg *ConfigSpec) {
+	return &ConfigSpec{
+		Theme: "simple",
+		Plugins: PluginsSpec{
+			OMZ:    []OMZPlugin{},
+			Custom: PluginsList{},
+		},
+		Aliases: map[string]string{},
+		Source: SourceSpec{
+			Post: []string{},
+			Pre:  []string{},
+		},
+		Configs: ConfigsSpec{
+			User:       map[string]string{},
+			OMZ:        map[string]string{},
+			Paths:      []string{},
+			ZshOptions: map[string]bool{},
+		},
+		Exports: map[string]string{},
+		Themes:  ThemesSpec{},
+	}
+}
 func MustLoad() (cfg *ConfigSpec) {
 	return MustLoadFromPath(dfpath.ConfigFile())
 }

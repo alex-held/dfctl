@@ -5,6 +5,7 @@ import (
 
 	"github.com/ahmetb/go-linq"
 	"github.com/olekukonko/tablewriter"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
 	"github.com/alex-held/dfctl/pkg/zsh"
@@ -48,40 +49,103 @@ func newPluginsInstallCommand() (cmd *cobra.Command) {
 
 	return cmd
 }
+
+type installablePredicate func(i zsh.Installable) bool
+
 func newPluginsListCommand() (cmd *cobra.Command) {
 	cmd = &cobra.Command{
 		Use: "list",
 	}
 
-	filter := cmd.PersistentFlags().StringP("filter", "f", "all", "--filter | -f [ all | installed | uninstalled ]")
+	// filter := cmd.PersistentFlags().StringP("filter", "f", "all", "--filter | -f [ all | installed | uninstalled ]")
+	filters := cmd.PersistentFlags().StringSliceP("filters", "f", []string{"all"}, "--filter [filter1,filter2,..]  (default: all) |  filters: all | enabled | disabled | kind:gh | kind:git | kind:omz |installed | uninstalled ]")
+	//	enabled := cmd.PersistentFlags().String("enabled", "all", "--enabled [ true | false ] (default: true)")
+	//	installed := cmd.PersistentFlags().String("installed", "all", "--installed [ true | false ] (default: true)")
 	out := cmd.PersistentFlags().StringP("out", "o", "table", "--out | -o [ list | table ]")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) (err error) {
 		var installables []zsh.Installable
-		switch *filter {
-		case "all":
-			linq.
-				From(zsh.ListInstallables()).
-				WhereT(zsh.KindFilterFn(zsh.PluginKind)).
-				ToSlice(&installables)
-		case "installed":
-			linq.
-				From(zsh.ListInstallables()).
-				WhereT(zsh.KindFilterFn(zsh.PluginKind)).
-				WhereT(zsh.InstalledFilterFn(true)).
-				ToSlice(&installables)
-		case "uninstalled":
-			linq.
-				From(zsh.ListInstallables()).
-				WhereT(zsh.KindFilterFn(zsh.PluginKind)).
-				WhereT(zsh.InstalledFilterFn(true)).
-				ToSlice(&installables)
+		var predicates []installablePredicate
+
+	filters:
+		for _, filter := range *filters {
+			switch filter {
+			case "all":
+				predicates = []installablePredicate{}
+				break filters
+			case "enabled":
+				predicates = append(predicates, func(i zsh.Installable) bool {
+					return i.IsEnabled()
+				})
+			case "disabled":
+				predicates = append(predicates, func(i zsh.Installable) bool {
+					return !i.IsEnabled()
+				})
+			case "installed":
+				predicates = append(predicates, func(i zsh.Installable) bool {
+					return i.IsInstalled()
+				})
+			case "uninstalled":
+				predicates = append(predicates, func(i zsh.Installable) bool {
+					return !i.IsInstalled()
+				})
+			case "kind:gh":
+				predicates = append(predicates, func(i zsh.Installable) bool {
+					if it, ok := i.(*zsh.Plugin); ok {
+						return it.Kind == zsh.PLUGIN_GITHUB
+					}
+					return false
+				})
+			case "kind:git":
+				predicates = append(predicates, func(i zsh.Installable) bool {
+					if it, ok := i.(*zsh.Plugin); ok {
+						return it.Kind == zsh.PLUGIN_GIT
+					}
+					return false
+				})
+			case "kind:omz":
+				predicates = append(predicates, func(i zsh.Installable) bool {
+					_, ok := i.(*zsh.OMZPlugin)
+					return ok
+				})
+			default:
+				log.Error().Msgf("unsupported filter %s", filter)
+			}
 		}
+
+		linq.
+			From(zsh.ListInstallables(zsh.KindFilterFn(zsh.PluginInstallableKind))).
+			WhereT(installablePredicate(func(i zsh.Installable) (isMatch bool) {
+				for _, predicate := range predicates {
+					if !predicate(i) {
+						return false
+					}
+				}
+				return true
+			})).
+			SortT(func(i, j zsh.Installable) bool {
+				iKind := GetRepoKind(i)
+				jKind := GetRepoKind(j)
+				return iKind.Order() < jKind.Order()
+			}).
+			ToSlice(&installables)
 
 		formatOutput(installables, *out, cmd)
 		return nil
 	}
 	return cmd
+}
+
+func GetRepoKind(i zsh.Installable) zsh.RepoKind {
+	switch it := i.(type) {
+	case *zsh.Plugin:
+		return it.Kind
+	case *zsh.OMZPlugin:
+		return zsh.PLUGIN_OMZ
+	default:
+		log.Fatal().Msgf("unable to get repo kind for %T %v", it, it)
+		return "panic"
+	}
 }
 
 func formatOutput(installables []zsh.Installable, outputFormat string, cmd *cobra.Command) {
@@ -97,11 +161,11 @@ func formatOutput(installables []zsh.Installable, outputFormat string, cmd *cobr
 			case *zsh.OMZPlugin:
 				kind = "omz"
 			}
-			return []string{i.Id(), fmt.Sprintf("%s", kind), fmt.Sprintf("%v", i.GetKind()), fmt.Sprintf("%v", i.IsInstalled())}
+			return []string{i.Id(), fmt.Sprintf("%s", kind), fmt.Sprintf("%v", i.GetKind()), fmt.Sprintf("%v", i.IsEnabled())}
 		}).ToSlice(&data)
 
 		table := tablewriter.NewWriter(cmd.OutOrStderr())
-		table.SetHeader([]string{"Name", "Kind", "Type", "Installed"})
+		table.SetHeader([]string{"Name", "Kind", "Type", "Enabled"})
 		table.SetHeaderColor(
 			tablewriter.Colors{tablewriter.FgHiWhiteColor, tablewriter.Bold},
 			tablewriter.Colors{tablewriter.FgHiMagentaColor, tablewriter.Bold},

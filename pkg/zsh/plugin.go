@@ -10,23 +10,57 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/rs/zerolog/log"
 
-	"github.com/alex-held/dfctl/pkg/config"
 	"github.com/alex-held/dfctl/pkg/dfpath"
 )
 
 type Plugin struct {
-	ID   string
-	Repo string
-	Name string
-	Kind config.PluginKind
+	ID      string
+	Repo    string
+	Name    string
+	Enabled bool
+	Kind    RepoKind
 }
 
-func PluginFromSpec(p *config.PluginSpec) *Plugin {
+func (p *Plugin) Enable(enable bool) error {
+	cfg, err := Load()
+	if err != nil {
+		return err
+	}
+
+	p.Enabled = enable
+
+	for i := 0; i < len(cfg.Plugins.Custom); i++ {
+		custom := cfg.Plugins.Custom[i]
+
+		if custom.ID == p.ID {
+			if enable {
+				return nil
+			}
+			cfg.Plugins.Custom = append(cfg.Plugins.Custom[:i], cfg.Plugins.Custom[i+1:]...)
+			return Save(cfg)
+		}
+	}
+
+	// plugin is not yet in config
+	if enable {
+		cfg.Plugins.Custom = append(cfg.Plugins.Custom, *p.Spec())
+		return Save(cfg)
+	}
+
+	return nil
+}
+
+func (p *Plugin) IsEnabled() bool {
+	return p.Enabled
+}
+
+func PluginFromSpec(p *PluginSpec) *Plugin {
 	return &Plugin{
-		ID:   p.ID,
-		Repo: p.Repo,
-		Name: p.Name,
-		Kind: p.Kind,
+		ID:      p.ID,
+		Repo:    p.Repo,
+		Name:    p.Name,
+		Kind:    p.Kind,
+		Enabled: p.Enabled,
 	}
 }
 
@@ -46,19 +80,21 @@ func NewPlugin(repoUrn string, id, name *string) (p *Plugin) {
 	}
 
 	return &Plugin{
-		ID:   *id,
-		Name: *name,
-		Repo: repo,
-		Kind: config.ParsePluginKind(kindStr),
+		ID:      *id,
+		Name:    *name,
+		Repo:    repo,
+		Kind:    ParsePluginKind(kindStr),
+		Enabled: true,
 	}
 }
 
-func (p *Plugin) Spec() *config.PluginSpec {
-	return &config.PluginSpec{
-		ID:   p.ID,
-		Repo: p.Repo,
-		Name: p.Name,
-		Kind: p.Kind,
+func (p *Plugin) Spec() *PluginSpec {
+	return &PluginSpec{
+		ID:      p.ID,
+		Repo:    p.Repo,
+		Name:    p.Name,
+		Kind:    p.Kind,
+		Enabled: p.Enabled,
 	}
 }
 
@@ -76,11 +112,11 @@ func (p *Plugin) Clone() (pluginPath string, err error) {
 	pluginPath = filepath.Join(pluginsDir, name)
 
 	switch p.Kind {
-	case config.PLUGIN_GITHUB:
+	case PLUGIN_GITHUB:
 		url = fmt.Sprintf("https://github.com/%s", p.Name)
-	case config.PLUGIN_GIT:
+	case PLUGIN_GIT:
 		url = p.Name
-	case config.PLUGIN_OMZ:
+	case PLUGIN_OMZ:
 		return "", ErrOMZCloneNotSupported
 	}
 
@@ -98,7 +134,7 @@ func (p *Plugin) Id() string { return p.ID }
 func (p *Plugin) Install() (res InstallResult) {
 	path := p.Path()
 
-	if p.Kind == config.PLUGIN_OMZ {
+	if p.Kind == PLUGIN_OMZ {
 		log.Debug().Msgf("plugin %s of kind omz does not need to be installed", p.ID)
 		return InstallResult{Installed: false}
 	}
@@ -112,14 +148,14 @@ func (p *Plugin) Install() (res InstallResult) {
 		return InstallResult{Installed: false, Err: err}
 	}
 
-	cfg := config.MustLoad()
+	cfg := MustLoad()
 
 	if cfg.Plugins.ContainsWithRepo(p.Repo, p.Kind) {
 		return InstallResult{Installed: true}
 	}
 
 	cfg.Plugins.Custom = append(cfg.Plugins.Custom, *p.Spec())
-	if err := config.Save(cfg); err != nil {
+	if err := Save(cfg); err != nil {
 		log.Error().Err(err).Msgf("unable to save plugin %s to config file", p.ID)
 		return InstallResult{Installed: true, Err: err}
 	}
@@ -127,8 +163,8 @@ func (p *Plugin) Install() (res InstallResult) {
 	return InstallResult{Installed: true}
 }
 
-func BuildRepositoryURI(repo string, kind config.PluginKind) string {
-	if kind == config.PLUGIN_GITHUB {
+func BuildRepositoryURI(repo string, kind RepoKind) string {
+	if kind == PLUGIN_GITHUB {
 		return "https://github.com/" + repo
 	}
 	return repo
@@ -136,7 +172,7 @@ func BuildRepositoryURI(repo string, kind config.PluginKind) string {
 
 func (p *Plugin) Path() string {
 	switch p.Kind {
-	case config.PLUGIN_OMZ:
+	case PLUGIN_OMZ:
 		return filepath.Join(dfpath.OMZ(), "plugins", p.Name)
 	default:
 		return filepath.Join(dfpath.Plugins(), p.Name)
@@ -144,14 +180,14 @@ func (p *Plugin) Path() string {
 }
 
 func PluginsQuery() (query linq.Query, err error) {
-	cfg, err := config.Load()
+	cfg, err := Load()
 	if err != nil {
 		return linq.Query{}, err
 	}
 
 	return linq.
 		From(cfg.Plugins).
-		SelectT(func(p config.PluginSpec) *Plugin {
+		SelectT(func(p PluginSpec) *Plugin {
 			return PluginFromSpec(&p)
 		}), nil
 }
@@ -174,7 +210,7 @@ func (p *Plugin) IsInstalled() bool {
 	return err == nil
 }
 
-func (p *Plugin) GetKind() InstallableKind { return PluginKind }
+func (p *Plugin) GetKind() InstallableKind { return PluginInstallableKind }
 
 func ListUninstalledPlugins() (plugins []*Plugin, err error) {
 	q, err := PluginsQuery()

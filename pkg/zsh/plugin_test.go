@@ -7,7 +7,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/alex-held/dfctl/pkg/config"
 	"github.com/alex-held/dfctl/pkg/env"
 )
 
@@ -15,30 +14,30 @@ func TestPlugin_Clone(t *testing.T) {
 
 	tt := []struct {
 		Name string
-		In   config.PluginSpec
+		In   PluginSpec
 		Err  error
 	}{
 		{
 			Name: "clones github plugin from github",
-			In: config.PluginSpec{
+			In: PluginSpec{
 				Name: "romkatv/powerlevel10k",
-				Kind: config.PLUGIN_GITHUB,
+				Kind: PLUGIN_GITHUB,
 			},
 			Err: nil,
 		},
 		{
 			Name: "clones git plugin from gitlab",
-			In: config.PluginSpec{
+			In: PluginSpec{
 				Name: "https://gitlab.com/IzzyOnDroid/repo",
-				Kind: config.PLUGIN_GIT,
+				Kind: PLUGIN_GIT,
 			},
 			Err: nil,
 		},
 		{
 			Name: "mustn't clone omz plugin",
-			In: config.PluginSpec{
+			In: PluginSpec{
 				Name: "brew",
-				Kind: config.PLUGIN_OMZ,
+				Kind: PLUGIN_OMZ,
 			},
 			Err: ErrOMZCloneNotSupported,
 		},

@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/alex-held/dfctl/pkg/config"
 	"github.com/alex-held/dfctl/pkg/dfpath"
+	"github.com/alex-held/dfctl/pkg/zsh"
 )
 
 func newEditCommand() (cmd *cobra.Command) {
@@ -36,7 +36,7 @@ func newEditCommand() (cmd *cobra.Command) {
 				return err
 			}
 
-			patchedCfg, err := config.LoadFromPath(file.Name())
+			patchedCfg, err := zsh.LoadFromPath(file.Name())
 			if err != nil {
 				return err
 			}

@@ -8,15 +8,29 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/rs/zerolog/log"
 
-	"github.com/alex-held/dfctl/pkg/config"
 	"github.com/alex-held/dfctl/pkg/dfpath"
 )
 
 type Theme struct {
-	*config.ThemeSpec
+	*ThemeSpec
 }
 
-func (theme *Theme) GetKind() InstallableKind { return ThemeKind }
+func (theme *Theme) Enable(enable bool) error {
+	cfg := MustLoad()
+	if enable {
+		cfg.Theme = theme.Name
+		return Save(cfg)
+	}
+	cfg.Theme = Default().Theme
+	return Save(cfg)
+}
+
+func (theme *Theme) IsEnabled() bool {
+	cfg := MustLoad()
+	return cfg.Theme == theme.ID
+}
+
+func (theme *Theme) GetKind() InstallableKind { return ThemeInstallableKind }
 func (theme *Theme) Id() string               { return theme.ID }
 
 func (theme *Theme) IsInstalled() bool {
@@ -25,7 +39,7 @@ func (theme *Theme) IsInstalled() bool {
 }
 
 func (theme *Theme) Path() string {
-	if theme.Kind == config.PLUGIN_OMZ {
+	if theme.Kind == PLUGIN_OMZ {
 		return filepath.Join(dfpath.OMZ(), "themes", theme.Name)
 	}
 	return filepath.Join(dfpath.Themes(), theme.Name)
@@ -33,7 +47,7 @@ func (theme *Theme) Path() string {
 
 func (theme *Theme) Install() (res InstallResult) {
 	path := theme.Path()
-	if theme.Kind == config.PLUGIN_OMZ {
+	if theme.Kind == PLUGIN_OMZ {
 		log.Debug().Msgf("plugin %s of kind omz does not need to be installed", theme.ID)
 		return InstallResult{Installed: false}
 	}
@@ -51,16 +65,13 @@ type Installable interface {
 	Id() string
 	Install() (result InstallResult)
 	IsInstalled() bool
+	IsEnabled() bool
 	Path() string
 	GetKind() InstallableKind
+	Enable(enable bool) error
 }
 
-type InstallResult struct {
-	Installed bool
-	Err       error
-}
-
-func InstallThemes(cfg *config.ConfigSpec) (installed map[Theme]InstallResult) {
+func InstallThemes(cfg *ConfigSpec) (installed map[Theme]InstallResult) {
 	installed = map[Theme]InstallResult{}
 	for _, theme := range cfg.Themes {
 		t := Theme{ThemeSpec: &theme}
@@ -77,7 +88,7 @@ func Install(installables ...Installable) (results map[Installable]InstallResult
 	return results
 }
 
-func InstallPlugins(cfg *config.ConfigSpec) (results map[Plugin]InstallResult) {
+func InstallPlugins(cfg *ConfigSpec) (results map[Plugin]InstallResult) {
 	results = map[Plugin]InstallResult{}
 	for _, plugin := range cfg.Plugins.Custom {
 		p := PluginFromSpec(&plugin)
@@ -86,52 +97,55 @@ func InstallPlugins(cfg *config.ConfigSpec) (results map[Plugin]InstallResult) {
 	return results
 }
 
-type OMZPlugin struct {
-	id string
-}
-
-func (p *OMZPlugin) Id() string {
-	return p.id
-}
-
-func (p *OMZPlugin) Install() (result InstallResult) {
-	return InstallResult{Installed: false}
-}
-
-func (p *OMZPlugin) IsInstalled() bool {
-	return true
-}
-
-func (p *OMZPlugin) Path() string {
-	return filepath.Join(dfpath.OMZ(), "plugins", p.Id())
-}
-
-func (p *OMZPlugin) GetKind() InstallableKind {
-	return PluginKind
-}
-
 func QueryInstallable() (query linq.Query) {
-	cfg, err := config.Load()
+	cfg, err := Load()
 	if err != nil {
 		log.Error().Err(err).Msgf("unable to load config")
 	}
 
 	return linq.
 		From(cfg.Themes).
-		SelectT(func(theme config.ThemeSpec) Installable {
+		SelectT(func(theme ThemeSpec) Installable {
 			return &Theme{&theme}
 		}).
 		Concat(linq.
 			From(cfg.Plugins.Custom).
-			SelectT(func(plugin config.PluginSpec) Installable {
+			SelectT(func(plugin PluginSpec) Installable {
 				return PluginFromSpec(&plugin)
 			}),
 		).
 		Concat(linq.
 			From(cfg.Plugins.OMZ).
-			SelectT(func(plugin string) Installable {
-				return &OMZPlugin{id: plugin}
-			}))
+			SelectT(func(plugin OMZPlugin) Installable {
+				return &plugin
+			}),
+		).
+		Concat(linq.
+			From(MustGetOMZPlugins()),
+		)
+}
+
+func MustGetOMZPlugins() (plugins []Installable) {
+	plugins, err := GetOMZPlugins()
+	if err != nil {
+		log.Error().Err(err).Msgf("getting omz plugins failed.")
+		panic(err)
+	}
+	return plugins
+}
+func GetOMZPlugins() (plugins []Installable, err error) {
+	path := filepath.Join(dfpath.OMZ(), "plugins")
+	dirEntries, err := os.ReadDir(path)
+	if err != nil {
+		return plugins, err
+	}
+
+	for _, dirEntry := range dirEntries {
+		if dirEntry.IsDir() {
+			plugins = append(plugins, &OMZPlugin{ID: dirEntry.Name()})
+		}
+	}
+	return plugins, err
 }
 
 func ListInstallables(predicateFns ...InstallablePredicateFn) (result []Installable) {
@@ -204,9 +218,9 @@ type InstallableKind int
 
 func (i InstallableKind) String() string {
 	switch i {
-	case PluginKind:
+	case PluginInstallableKind:
 		return "plugin"
-	case ThemeKind:
+	case ThemeInstallableKind:
 		return "theme"
 	default:
 		panic("implement me!")
@@ -214,8 +228,8 @@ func (i InstallableKind) String() string {
 }
 
 const (
-	PluginKind InstallableKind = iota
-	ThemeKind
+	PluginInstallableKind InstallableKind = iota
+	ThemeInstallableKind
 )
 
 func KindFilterFn(kind InstallableKind) InstallablePredicateFn {

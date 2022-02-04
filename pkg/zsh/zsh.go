@@ -6,12 +6,11 @@ import (
 
 	"github.com/ahmetb/go-linq"
 
-	"github.com/alex-held/dfctl/pkg/config"
 	"github.com/alex-held/dfctl/pkg/dfpath"
 )
 
 func Source() (rendered string, err error) {
-	cfg, err := config.Load()
+	cfg, err := Load()
 	if err != nil {
 		return "", err
 	}
@@ -20,7 +19,7 @@ func Source() (rendered string, err error) {
 	return rendered, err
 }
 
-func render(cfg *config.ConfigSpec) (rendered string, err error) {
+func render(cfg *ConfigSpec) (rendered string, err error) {
 	tpl := template.New("zshrc")
 	parse, err := tpl.Parse(tmpl)
 	if err != nil {
@@ -31,7 +30,7 @@ func render(cfg *config.ConfigSpec) (rendered string, err error) {
 		OMZ_HOME    string
 		Theme       string
 		Plugins     []string
-		OMZPlugins  []string
+		OMZPlugins  []OMZPlugin
 		Paths       []string
 		Exports     map[string]string
 		Aliases     map[string]string
@@ -54,7 +53,7 @@ func render(cfg *config.ConfigSpec) (rendered string, err error) {
 		OMZPlugins:  cfg.Plugins.OMZ,
 	}
 
-	linq.From(cfg.Plugins.Custom).SelectT(func(spec config.PluginSpec) string {
+	linq.From(cfg.Plugins.Custom).SelectT(func(spec PluginSpec) string {
 		return spec.ID
 	}).ToSlice(&data.Plugins)
 
