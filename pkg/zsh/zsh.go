@@ -30,7 +30,7 @@ func render(cfg *ConfigSpec) (rendered string, err error) {
 		OMZ_HOME    string
 		Theme       string
 		Plugins     []string
-		OMZPlugins  []OMZPlugin
+		OMZPlugins  []string
 		Paths       []string
 		Exports     map[string]string
 		Aliases     map[string]string
@@ -50,7 +50,7 @@ func render(cfg *ConfigSpec) (rendered string, err error) {
 		UserConfigs: cfg.Configs.User,
 		ZshOptions:  cfg.Configs.ZshOptions,
 		OMZConfigs:  cfg.Configs.OMZ,
-		OMZPlugins:  cfg.Plugins.OMZ,
+		OMZPlugins:  cfg.Plugins.OMZ.PluginIDs(),
 	}
 
 	linq.From(cfg.Plugins.Custom).SelectT(func(spec PluginSpec) string {

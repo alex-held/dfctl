@@ -101,6 +101,13 @@ type PluginsSpec struct {
 	Custom PluginsList    `json:"custom,omitempty"`
 }
 
+func (omzs OMZPluginsList) PluginIDs() (plugins []string) {
+	for _, plugin := range omzs {
+		plugins = append(plugins, plugin.ID)
+	}
+	return plugins
+}
+
 func (s PluginsSpec) GetOMZ(id string) (omz *OMZPlugin, ok bool) {
 	for _, omzPlugin := range s.OMZ {
 		if omzPlugin.ID == id {
