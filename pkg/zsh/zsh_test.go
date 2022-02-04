@@ -32,7 +32,7 @@ func TestRender(t *testing.T) {
 			"FZF_CTRL_T_COMMAND":              "$FZF_DEFAULT_COMMAND",
 		},
 		Plugins: PluginsSpec{
-			OMZ: []string{
+			OMZ: OMZPluginList(
 				"ag",
 				"autojump",
 				"brew",
@@ -56,7 +56,7 @@ func TestRender(t *testing.T) {
 				"ssh-agent",
 				"sudo",
 				"yarn",
-			},
+			),
 			Custom: PluginsList{
 				{
 					ID:   "zsh-autosuggestions",
@@ -166,8 +166,9 @@ func TestRender(t *testing.T) {
 		},
 	}
 
-	_ = SaveToPath(cfg, "/Users/dev/tmp/dfctl.toml")
+	_ = SaveToPath(cfg, "/Users/dev/tmp/dfctl.yaml")
 	_ = Save(cfg)
+
 	rendered, err := render(cfg)
 	assert.NoError(t, err)
 

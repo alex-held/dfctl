@@ -5,71 +5,10 @@ import (
 	"path/filepath"
 
 	"github.com/ahmetb/go-linq"
-	"github.com/go-git/go-git/v5"
 	"github.com/rs/zerolog/log"
 
 	"github.com/alex-held/dfctl/pkg/dfpath"
 )
-
-type Theme struct {
-	*ThemeSpec
-}
-
-func (theme *Theme) Enable(enable bool) error {
-	cfg := MustLoad()
-	if enable {
-		cfg.Theme = theme.Name
-		return Save(cfg)
-	}
-	cfg.Theme = Default().Theme
-	return Save(cfg)
-}
-
-func (theme *Theme) IsEnabled() bool {
-	cfg := MustLoad()
-	return cfg.Theme == theme.ID
-}
-
-func (theme *Theme) GetKind() InstallableKind { return ThemeInstallableKind }
-func (theme *Theme) Id() string               { return theme.ID }
-
-func (theme *Theme) IsInstalled() bool {
-	_, err := os.Stat(theme.Path())
-	return err == nil
-}
-
-func (theme *Theme) Path() string {
-	if theme.Kind == PLUGIN_OMZ {
-		return filepath.Join(dfpath.OMZ(), "themes", theme.Name)
-	}
-	return filepath.Join(dfpath.Themes(), theme.Name)
-}
-
-func (theme *Theme) Install() (res InstallResult) {
-	path := theme.Path()
-	if theme.Kind == PLUGIN_OMZ {
-		log.Debug().Msgf("plugin %s of kind omz does not need to be installed", theme.ID)
-		return InstallResult{Installed: false}
-	}
-	if _, statErr := os.Stat(path); statErr == nil {
-		log.Debug().Msgf("plugin %s is already installed", theme.ID)
-		return InstallResult{Installed: false}
-	}
-	if _, err := git.PlainClone(path, false, &git.CloneOptions{URL: BuildRepositoryURI(theme.Repo, theme.Kind)}); err != nil {
-		return InstallResult{Installed: false, Err: err}
-	}
-	return InstallResult{Installed: true}
-}
-
-type Installable interface {
-	Id() string
-	Install() (result InstallResult)
-	IsInstalled() bool
-	IsEnabled() bool
-	Path() string
-	GetKind() InstallableKind
-	Enable(enable bool) error
-}
 
 func InstallThemes(cfg *ConfigSpec) (installed map[Theme]InstallResult) {
 	installed = map[Theme]InstallResult{}
@@ -133,6 +72,7 @@ func MustGetOMZPlugins() (plugins []Installable) {
 	}
 	return plugins
 }
+
 func GetOMZPlugins() (plugins []Installable, err error) {
 	path := filepath.Join(dfpath.OMZ(), "plugins")
 	dirEntries, err := os.ReadDir(path)

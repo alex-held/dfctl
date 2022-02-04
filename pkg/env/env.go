@@ -95,9 +95,11 @@ func GetOverrides() (override *EnvConfig, ok bool) {
 }
 
 type EnvConfig struct {
-	Home   string `env:"DFCTL_HOME,default=$HOME/.config/dfctl"`
-	OMZ    string `env:"DFCTL_OMZ,default=$HOME/.config/dfctl/omz"`
-	Config string `env:"DFCTL_CONFIG,default=$HOME/.config/dfctl/config"`
+	Home string `env:"DFCTL_HOME,default=$HOME/.config/dfctl"`
+	OMZ  string `env:"DFCTL_OMZ,default=$HOME/.config/dfctl/omz"`
+	// Config         string `env:"DFCTL_CONFIG,default=$HOME/.config/dfctl/config.yaml"`
+	ConfigFileType string `env:"DFCTL_CONFIGFILE_TYPE,default=.yaml"`
+	Config         string `env:"DFCTL_CONFIG,default=$HOME/.config/dfctl/devctl.yaml"`
 }
 
 func (e *EnvConfig) overrideDefaults() {
@@ -125,8 +127,11 @@ func Load() (*EnvConfig, error) {
 	if err != nil {
 		return env, err
 	}
-
-	if err := envconfig.ProcessWith(context.Background(), env, envconfig.MapLookuper(environment)); err != nil {
+	lookuper := envconfig.MultiLookuper(
+		envconfig.OsLookuper(),
+		envconfig.MapLookuper(environment),
+	)
+	if err := envconfig.ProcessWith(context.Background(), env, lookuper); err != nil {
 		return nil, err
 	}
 

@@ -12,17 +12,16 @@ import (
 func TestConfig_Save(t *testing.T) {
 	cfg := &ConfigSpec{
 		Plugins: PluginsSpec{
-			{
-				Name: "brew",
-				Kind: PLUGIN_OMZ,
-			},
-			{
-				Name: "romkatv/powerlevel10k",
-				Kind: PLUGIN_GITHUB,
-			},
-			{
-				Name: "https://gitlab.com/IzzyOnDroid/repo",
-				Kind: PLUGIN_GIT,
+			OMZ: OMZPluginList("brew"),
+			Custom: PluginsList{
+				{
+					Name: "romkatv/powerlevel10k",
+					Kind: PLUGIN_GITHUB,
+				},
+				{
+					Name: "https://gitlab.com/IzzyOnDroid/repo",
+					Kind: PLUGIN_GIT,
+				},
 			},
 		},
 	}

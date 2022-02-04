@@ -17,7 +17,101 @@ func newPluginsCommand() (cmd *cobra.Command) {
 	}
 	cmd.AddCommand(newPluginsListCommand())
 	cmd.AddCommand(newPluginsInstallCommand())
+	cmd.AddCommand(newPluginsEnableCommand())
+	cmd.AddCommand(newPluginsDisableCommand())
 	return cmd
+}
+
+func newPluginsDisableCommand() (cmd *cobra.Command) {
+	cmd = &cobra.Command{
+		Use: "disable [plugin1 plugin2 plugin3]",
+	}
+	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		log.Debug().Msgf("disabling %v", args)
+
+		installables := GetPluginsByNames(args, func(q linq.Query) linq.Query {
+			return q.WhereT(installablePredicate(func(i zsh.Installable) bool {
+				return i.IsEnabled()
+			}))
+		})
+
+		for _, i := range installables {
+			log.Debug().Str("id", i.Id()).Str("kind", string(GetRepoKind(i))).Bool("enabled", i.IsEnabled()).Bool("installed", i.IsInstalled()).Msg("enabling...")
+			if err := i.SetEnabled(false); err != nil {
+				log.Error().Err(err).Msgf("failed to disable %s", i.Id())
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	return cmd
+}
+
+func newPluginsEnableCommand() (cmd *cobra.Command) {
+	cmd = &cobra.Command{
+		Use: "enable [plugin1 plugin2 plugin3]",
+	}
+	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		installables := GetInstallablesByNames(args, func(q linq.Query) linq.Query {
+			return q.WhereT(installablePredicate(func(i zsh.Installable) bool {
+				return !i.IsEnabled()
+			}))
+		})
+
+		for _, i := range installables {
+			log.Debug().Str("id", i.Id()).Str("kind", string(GetRepoKind(i))).Bool("enabled", i.IsEnabled()).Bool("installed", i.IsInstalled()).Msg("enabling...")
+
+			if !i.IsInstalled() {
+				log.Debug().Str("id", i.Id()).Str("kind", string(GetRepoKind(i))).Msg("installing...")
+				if res := i.Install(); res.Err != nil {
+					log.Error().Err(res.Err).Msgf("failed to install %s", i.Id())
+				}
+			}
+
+			if err := i.SetEnabled(true); err != nil {
+				log.Error().Err(err).Msgf("failed to enable %s", i.Id())
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	return cmd
+}
+
+type QueryFn func(query linq.Query) linq.Query
+
+func GetPluginsByNames(names []string, fns ...QueryFn) (installables []zsh.Installable) {
+	return GetInstallablesByNames(names,
+		append([]QueryFn{func(q linq.Query) linq.Query {
+			return q.WhereT(func(i zsh.Installable) bool {
+				return i.GetKind() == zsh.PluginInstallableKind
+			})
+		}}, fns...)...)
+}
+
+func GetInstallablesByNames(names []string, fns ...QueryFn) (installables []zsh.Installable) {
+	query := linq.
+		From(names).
+		JoinT(linq.
+			From(zsh.ListInstallables()),
+			func(id string) string { return id },
+			func(i zsh.Installable) string { return i.Id() },
+			func(id string, i zsh.Installable) zsh.Installable { return i },
+		)
+
+	for _, queryFn := range fns {
+		query = queryFn(query)
+	}
+	query.
+		DistinctByT(func(i zsh.Installable) string {
+			return i.Id()
+		}).
+		ToSlice(&installables)
+	return installables
 }
 
 func newPluginsInstallCommand() (cmd *cobra.Command) {

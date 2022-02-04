@@ -21,7 +21,7 @@ type Plugin struct {
 	Kind    RepoKind
 }
 
-func (p *Plugin) Enable(enable bool) error {
+func (p *Plugin) SetEnabled(enable bool) error {
 	cfg, err := Load()
 	if err != nil {
 		return err

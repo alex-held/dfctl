@@ -6,7 +6,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/alex-held/dfctl/pkg/dfpath"
 	"github.com/alex-held/dfctl/pkg/zsh"
 )
 
@@ -14,13 +13,24 @@ func newEditCommand() (cmd *cobra.Command) {
 	cmd = &cobra.Command{
 		Use: "edit",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			file, err := os.CreateTemp("", "dfctl-zsh")
-			data, err := os.ReadFile(dfpath.ConfigFile())
+			file, err := os.CreateTemp("", "dfctl-config-*.yaml")
+			defer file.Close()
+
+			if err != nil {
+				return err
+			}
+			cfg, err := zsh.Load()
 			if err != nil {
 				return err
 			}
 
-			if _, err = file.Write(data); err != nil {
+			formatted, err := cfg.Format()
+			if err != nil {
+				return err
+			}
+			_, err = file.WriteString(formatted)
+
+			if err != nil {
 				return err
 			}
 
@@ -41,16 +51,8 @@ func newEditCommand() (cmd *cobra.Command) {
 				return err
 			}
 
-			patchedToml, err := patchedCfg.Toml()
-			if err != nil {
-				return err
-			}
-
-			if err = os.WriteFile(dfpath.ConfigFile(), []byte(patchedToml), os.ModePerm); err != nil {
-				return err
-			}
-
-			return nil
+			err = zsh.Save(patchedCfg)
+			return err
 		},
 	}
 

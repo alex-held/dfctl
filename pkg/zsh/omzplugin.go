@@ -12,18 +12,22 @@ type OMZPlugin struct {
 	ID string
 }
 
-func (p *OMZPlugin) MarshalTOML() ([]byte, error) {
+func (p OMZPlugin) MarshalText() (text []byte, err error) {
 	return []byte(p.ID), nil
 }
 
-func (p *OMZPlugin) UnmarshalText(text []byte) error {
+func (p OMZPlugin) MarshalTOML() ([]byte, error) {
+	return []byte(p.ID), nil
+}
+
+func (p OMZPlugin) UnmarshalText(text []byte) error {
 	p.ID = string(text)
 	return nil
 }
 
 var ErrUnmarshalInvalidTypeCast = errors.New("unable to cast data type to expected")
 
-func (p *OMZPlugin) UnmarshalTOML(i interface{}) error {
+func (p OMZPlugin) UnmarshalTOML(i interface{}) error {
 	if id, ok := i.(string); ok {
 		p.ID = id
 		return nil
@@ -31,31 +35,15 @@ func (p *OMZPlugin) UnmarshalTOML(i interface{}) error {
 	return fmt.Errorf("cannot %v (%T) cast to string: %w", i, i, ErrUnmarshalInvalidTypeCast)
 }
 
-func (p *OMZPlugin) Enable(enable bool) error {
+func (p *OMZPlugin) SetEnabled(enable bool) error {
 	cfg, err := Load()
 	if err != nil {
 		return err
 	}
 
-	for i := 0; i < len(cfg.Plugins.OMZ); i++ {
-		omz := cfg.Plugins.OMZ[i]
-
-		if omz.ID == p.ID {
-			if enable {
-				return nil
-			}
-			cfg.Plugins.OMZ = append(cfg.Plugins.OMZ[:i], cfg.Plugins.OMZ[i+1:]...)
-			return Save(cfg)
-		}
-	}
-
-	// plugin is not yet in config
-	if enable {
-		cfg.Plugins.OMZ = append(cfg.Plugins.OMZ, *p)
-		return Save(cfg)
-	}
-
-	return nil
+	cfg.Plugins.OMZ.Enable(p.ID, enable)
+	err = Save(cfg)
+	return err
 }
 
 func (p *OMZPlugin) IsEnabled() bool {
