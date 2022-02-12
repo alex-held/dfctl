@@ -12,14 +12,17 @@ func newSourceCommand() (cmd *cobra.Command) {
 	cmd = &cobra.Command{
 		Use: "source",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			source, err := zsh.Source()
-			if err != nil {
-				return err
-			}
-			_, err = os.Stdout.WriteString(source)
-			return err
+			return runSourceCommand(cmd, args)
 		},
 	}
-
 	return cmd
+}
+
+func runSourceCommand(cmd *cobra.Command, args []string) (err error) {
+	source, err := zsh.Source()
+	if err != nil {
+		return err
+	}
+	_, err = os.Stdout.WriteString(source)
+	return err
 }

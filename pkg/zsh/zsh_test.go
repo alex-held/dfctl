@@ -59,40 +59,46 @@ func TestRender(t *testing.T) {
 			),
 			Custom: PluginsList{
 				{
-					ID:   "zsh-autosuggestions",
-					Name: "zsh-autosuggestions",
-					Repo: "zsh-users/zsh-autosuggestions",
-					Kind: PLUGIN_GITHUB,
+					ID:      "zsh-autosuggestions",
+					Name:    "zsh-autosuggestions",
+					Repo:    "zsh-users/zsh-autosuggestions",
+					Kind:    PLUGIN_GITHUB,
+					Enabled: true,
 				},
 				{
-					ID:   "zsh-completions",
-					Name: "zsh-completions",
-					Repo: "zsh-users/zsh-completions",
-					Kind: PLUGIN_GITHUB,
+					ID:      "zsh-completions",
+					Name:    "zsh-completions",
+					Repo:    "zsh-users/zsh-completions",
+					Kind:    PLUGIN_GITHUB,
+					Enabled: true,
 				},
 				{
-					ID:   "fast-syntax-highlighting",
-					Name: "fast-syntax-highlighting",
-					Repo: "zdharma-continuum/fast-syntax-highlighting",
-					Kind: PLUGIN_GITHUB,
+					ID:      "fast-syntax-highlighting",
+					Name:    "fast-syntax-highlighting",
+					Repo:    "zdharma-continuum/fast-syntax-highlighting",
+					Kind:    PLUGIN_GITHUB,
+					Enabled: true,
 				},
 				{
-					ID:   "zsh-fzf-history-search",
-					Name: "zsh-fzf-history-search",
-					Repo: "joshskidmore/zsh-fzf-history-search",
-					Kind: PLUGIN_GITHUB,
+					ID:      "zsh-fzf-history-search",
+					Name:    "zsh-fzf-history-search",
+					Repo:    "joshskidmore/zsh-fzf-history-search",
+					Kind:    PLUGIN_GITHUB,
+					Enabled: true,
 				},
 				{
-					ID:   "fzf-tab",
-					Name: "fzf-tab",
-					Repo: "Aloxaf/fzf-tab",
-					Kind: PLUGIN_GITHUB,
+					ID:      "fzf-tab",
+					Name:    "fzf-tab",
+					Repo:    "Aloxaf/fzf-tab",
+					Kind:    PLUGIN_GITHUB,
+					Enabled: true,
 				},
 				{
-					ID:   "zfzf",
-					Name: "zfzf",
-					Repo: "b0o/zfzf",
-					Kind: PLUGIN_GITHUB,
+					ID:      "zfzf",
+					Name:    "zfzf",
+					Repo:    "b0o/zfzf",
+					Kind:    PLUGIN_GITHUB,
+					Enabled: true,
 				},
 			},
 		},
@@ -166,8 +172,11 @@ func TestRender(t *testing.T) {
 		},
 	}
 
-	_ = SaveToPath(cfg, "/Users/dev/tmp/dfctl.yaml")
-	_ = Save(cfg)
+	err := SaveToPath(cfg, "/Users/dev/tmp/dfctl.yaml")
+	assert.NoError(t, err)
+
+	// err = Save(cfg)
+	assert.NoError(t, err)
 
 	rendered, err := render(cfg)
 	assert.NoError(t, err)

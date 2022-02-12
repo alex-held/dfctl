@@ -54,12 +54,6 @@ func QueryInstallable() (query linq.Query) {
 			}),
 		).
 		Concat(linq.
-			From(cfg.Plugins.OMZ).
-			SelectT(func(plugin OMZPlugin) Installable {
-				return &plugin
-			}),
-		).
-		Concat(linq.
 			From(MustGetOMZPlugins()),
 		)
 }

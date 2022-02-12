@@ -11,6 +11,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/alex-held/dfctl/pkg/dfpath"
+	"github.com/alex-held/dfctl/pkg/factory"
 )
 
 type Plugin struct {
@@ -206,7 +207,7 @@ func ListInstalledPlugins() (plugins []*Plugin, err error) {
 }
 
 func (p *Plugin) IsInstalled() bool {
-	_, err := os.Stat(p.Path())
+	_, err := factory.GetFS().Stat(p.Path())
 	return err == nil
 }
 

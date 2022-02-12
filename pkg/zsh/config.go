@@ -3,7 +3,6 @@ package zsh
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -11,17 +10,19 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/rs/zerolog/log"
+	"github.com/spf13/afero"
 	"gopkg.in/yaml.v3"
 
 	"github.com/alex-held/dfctl/pkg/dfpath"
+	"github.com/alex-held/dfctl/pkg/factory"
 )
 
 type PluginSpec struct {
-	ID      string   `toml:"id"`
+	ID      string   `toml:"id,required"`
 	Name    string   `toml:"name,omitempty"`
 	Repo    string   `toml:"repo,omitempty"`
 	Kind    RepoKind `toml:"kind,omitempty"`
-	Enabled bool     `toml:"enabled,omitempty"`
+	Enabled bool     `toml:"enabled,required"`
 }
 
 type RepoKind string
@@ -248,21 +249,21 @@ func (cfg *ConfigSpec) Format(opts ...ConfigFormatterOption) (formatted string, 
 }
 
 func SaveToPath(cfg *ConfigSpec, path string) (err error) {
-	err = os.MkdirAll(filepath.Dir(path), os.ModePerm)
+	err = factory.GetFS().MkdirAll(filepath.Dir(path), os.ModePerm)
 	if err != nil {
 		return err
 	}
 	switch filepath.Ext(path) {
 	case ".yaml", ".yml":
 		if data, err := yaml.Marshal(cfg); err == nil {
-			err = os.WriteFile(path, data, os.ModePerm)
+			err = afero.WriteFile(factory.GetFS(), path, data, os.ModePerm)
 			return err
 		}
 		return err
 	case ".toml":
 		b := &bytes.Buffer{}
 		if err = toml.NewEncoder(b).Encode(cfg); err == nil {
-			err = os.WriteFile(path, b.Bytes(), os.ModePerm)
+			err = afero.WriteFile(factory.GetFS(), path, b.Bytes(), os.ModePerm)
 			return err
 		}
 		return err
@@ -278,7 +279,7 @@ func Save(cfg *ConfigSpec) (err error) {
 }
 
 func LoadFromPath(path string) (cfg *ConfigSpec, err error) {
-	data, err := ioutil.ReadFile(path)
+	data, err := afero.ReadFile(factory.GetFS(), path)
 	if err != nil {
 		return nil, err
 	}
