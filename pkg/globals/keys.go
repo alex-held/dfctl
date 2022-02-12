@@ -1,0 +1,3 @@
+package globals
+
+const COMAND_GROUP_ANNOTATION_KEY = "COMMAND_GROUP"

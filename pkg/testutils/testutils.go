@@ -9,42 +9,6 @@ import (
 	//	"github.com/sudo-bcli/color"
 )
 
-const (
-	colorBlack AnsiiCode = iota + 30
-	colorRed
-	colorGreen
-	colorYellow
-	colorBlue
-	colorMagenta
-	colorCyan
-	colorWhite
-
-	colorDarkGray AnsiiCode = 90
-)
-
-const (
-	Normal       AnsiiCode = 0
-	Bold                   = 1
-	Underlined             = 4
-	Blinking               = 5
-	ReverseVideo           = 7
-)
-
-type AnsiiCode int
-
-func (a AnsiiCode) Paint(i interface{}) string {
-	return fmt.Sprintf("\x1b[%dm%v\x1b[0m", a, i)
-}
-
-// Colorize returns the string s wrapped in ANSI code c, unless disabled is true.
-func Colorize(i interface{}, opts ...AnsiiCode) (colorized string) {
-	colorized = fmt.Sprintf("%v", i)
-	for _, opt := range opts {
-		colorized = opt.Paint(colorized)
-	}
-	return colorized
-}
-
 func Logger(t *testing.T) (logger zerolog.Logger) {
 	w := zerolog.NewConsoleWriter(func(w *zerolog.ConsoleWriter) {
 		w.FormatFieldName = func(i interface{}) string {

@@ -8,12 +8,10 @@ import (
 )
 
 func NewZshCommand(f factory.Factory) (cmd *cobra.Command) {
-	cmd = &cobra.Command{
-		Use: "zsh",
-	}
-
-	cmd.AddCommand(newSourceCommand())
-	cmd.AddCommand(newInstallCommand(f))
-	cmd.AddCommand(plugins.NewPluginsCommand(f))
+	cmd = f.NewCommand("zsh",
+		factory.WithHelp("interacts with the zsh configuration", ""),
+		factory.WithSubcommands(newSourceCommand),
+		factory.WithGroupedSubcommands("plugins", plugins.NewPluginsCommand, newInstallCommand),
+	)
 	return cmd
 }

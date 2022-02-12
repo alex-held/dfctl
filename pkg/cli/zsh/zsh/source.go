@@ -5,15 +5,18 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/alex-held/dfctl/pkg/factory"
 	"github.com/alex-held/dfctl/pkg/zsh"
 )
 
-func newSourceCommand() (cmd *cobra.Command) {
-	cmd = &cobra.Command{
-		Use: "source",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return runSourceCommand(cmd, args)
-		},
+func newSourceCommand(f factory.Factory) (cmd *cobra.Command) {
+	cmd = f.NewCommand("source",
+		factory.WithHelp("outputs valid a generated .zshrc based on your configuration", ""),
+		factory.WithAnnotationKeys("IsCore"),
+	)
+
+	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		return runSourceCommand(cmd, args)
 	}
 	return cmd
 }

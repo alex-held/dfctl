@@ -10,6 +10,8 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+
+	"github.com/alex-held/dfctl/pkg/globals"
 )
 
 func GetFS() afero.Fs {
@@ -35,13 +37,19 @@ func (f *factory) GetStreams() *Streams {
 }
 
 type CommandConfig struct {
-	Flag    *FlagsConfig
-	Help    *helpConfig
-	Name    string
-	FS      afero.Fs
-	Streams *Streams
-	Factory *factory
+	Flag        *FlagsConfig
+	Help        *helpConfig
+	Name        string
+	FS          afero.Fs
+	Streams     *Streams
+	Factory     *factory
+	Subcommands CommandFactoryGroups
+	Group       string
+	Annotations map[string]string
 }
+
+type CommandFactoryFns []CommandFactoryFn
+type CommandFactoryGroups map[string]CommandFactoryFns
 
 func WithLocalFlags(opts ...FlagsOption) CommandOption {
 	return func(c *CommandConfig) {
@@ -60,6 +68,7 @@ func WithPersistentFlags(opts ...FlagsOption) CommandOption {
 		}
 	}
 }
+
 func WithFlags(opts ...FlagsOption) CommandOption {
 	return func(c *CommandConfig) {
 		for _, opt := range opts {
@@ -128,11 +137,19 @@ func (c *FlagsConfig) getFlag(name string, val interface{}) (err error) {
 	return ErrFlagNotFound
 }
 
+func WithAnnotationKeys(keys ...string) CommandOption {
+	return func(c *CommandConfig) {
+		if len(c.Annotations) == 0 {
+			c.Annotations = map[string]string{}
+		}
+		for _, key := range keys {
+			c.Annotations[key] = key
+		}
+	}
+}
+
 func WithHelp(short, long string) CommandOption {
 	return func(c *CommandConfig) {
-		if long == "" {
-			long = short
-		}
 		c.Help = &helpConfig{
 			Short: short,
 			Long:  long,
@@ -141,6 +158,22 @@ func WithHelp(short, long string) CommandOption {
 }
 
 type CommandOption func(c *CommandConfig)
+type CommandFactoryFn func(f Factory) *cobra.Command
+
+func WithSubcommands(fns ...CommandFactoryFn) CommandOption {
+	return WithGroupedSubcommands("core commands", fns...)
+}
+
+func WithGroup(group string) CommandOption {
+	return func(c *CommandConfig) {
+		c.Group = group
+	}
+}
+func WithGroupedSubcommands(group string, fns ...CommandFactoryFn) CommandOption {
+	return func(c *CommandConfig) {
+		c.Subcommands[group] = fns
+	}
+}
 
 func (c *CommandConfig) CobraCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -161,6 +194,24 @@ func (c *CommandConfig) CobraCommand() *cobra.Command {
 	for name, opt := range c.Flag.Flags {
 		value := opt(cmd.Flags())
 		c.Flag.Values.SetValue(name, value)
+	}
+
+	if len(c.Group) > 0 {
+		if cmd.Annotations == nil {
+			cmd.Annotations = map[string]string{}
+		}
+		cmd.Annotations[globals.COMAND_GROUP_ANNOTATION_KEY] = c.Group
+	}
+
+	for group, factoryFns := range c.Subcommands {
+		for _, factoryFn := range factoryFns {
+			subcommand := factoryFn(c.Factory)
+			if subcommand.Annotations == nil {
+				subcommand.Annotations = map[string]string{}
+			}
+			subcommand.Annotations[globals.COMAND_GROUP_ANNOTATION_KEY] = group
+			cmd.AddCommand(subcommand)
+		}
 	}
 
 	return cmd
@@ -185,10 +236,11 @@ func (f *factory) NewCommand(use string, opts ...CommandOption) (cmd *cobra.Comm
 			Flags:      map[string]func(*pflag.FlagSet) (value interface{}){},
 			Values:     FlagValueStore{},
 		},
-		FS:      f.FS,
-		Streams: f.Streams,
-		Help:    &helpConfig{},
-		Factory: f,
+		FS:          f.FS,
+		Streams:     f.Streams,
+		Help:        &helpConfig{},
+		Factory:     f,
+		Subcommands: CommandFactoryGroups{},
 	}
 
 	for _, opt := range opts {
