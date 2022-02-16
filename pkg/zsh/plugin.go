@@ -207,7 +207,7 @@ func ListInstalledPlugins() (plugins []*Plugin, err error) {
 }
 
 func (p *Plugin) IsInstalled() bool {
-	_, err := factory.GetFS().Stat(p.Path())
+	_, err := factory.Default.Fs.Stat(p.Path())
 	return err == nil
 }
 

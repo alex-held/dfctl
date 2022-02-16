@@ -9,7 +9,7 @@ import (
 	"github.com/alex-held/dfctl/pkg/factory"
 )
 
-func newPathCommand(f factory.Factory) (cmd *cobra.Command) {
+func newPathCommand(f *factory.Factory) (cmd *cobra.Command) {
 	cmd = f.NewCommand("path",
 		factory.WithHelp("view the current configuation file path", "displays a the full path of the $DFCTL_CONFIG file"),
 	)

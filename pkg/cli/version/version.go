@@ -11,7 +11,7 @@ import (
 	"github.com/alex-held/dfctl/pkg/globals"
 )
 
-func NewVersionCommand(f factory.Factory) *cobra.Command {
+func NewVersionCommand(f *factory.Factory) *cobra.Command {
 	cmd := f.NewCommand("version",
 		factory.WithHelp("displays dfctl version information", ""),
 	)

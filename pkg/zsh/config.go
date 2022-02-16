@@ -249,21 +249,21 @@ func (cfg *ConfigSpec) Format(opts ...ConfigFormatterOption) (formatted string, 
 }
 
 func SaveToPath(cfg *ConfigSpec, path string) (err error) {
-	err = factory.GetFS().MkdirAll(filepath.Dir(path), os.ModePerm)
+	err = factory.Default.Fs.MkdirAll(filepath.Dir(path), os.ModePerm)
 	if err != nil {
 		return err
 	}
 	switch filepath.Ext(path) {
 	case ".yaml", ".yml":
 		if data, err := yaml.Marshal(cfg); err == nil {
-			err = afero.WriteFile(factory.GetFS(), path, data, os.ModePerm)
+			err = afero.WriteFile(factory.Default.Fs, path, data, os.ModePerm)
 			return err
 		}
 		return err
 	case ".toml":
 		b := &bytes.Buffer{}
 		if err = toml.NewEncoder(b).Encode(cfg); err == nil {
-			err = afero.WriteFile(factory.GetFS(), path, b.Bytes(), os.ModePerm)
+			err = afero.WriteFile(factory.Default.Fs, path, b.Bytes(), os.ModePerm)
 			return err
 		}
 		return err
@@ -279,7 +279,7 @@ func Save(cfg *ConfigSpec) (err error) {
 }
 
 func LoadFromPath(path string) (cfg *ConfigSpec, err error) {
-	data, err := afero.ReadFile(factory.GetFS(), path)
+	data, err := afero.ReadFile(factory.Default.Fs, path)
 	if err != nil {
 		return nil, err
 	}

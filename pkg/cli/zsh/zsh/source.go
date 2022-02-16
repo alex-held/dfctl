@@ -9,7 +9,7 @@ import (
 	"github.com/alex-held/dfctl/pkg/zsh"
 )
 
-func newSourceCommand(f factory.Factory) (cmd *cobra.Command) {
+func newSourceCommand(f *factory.Factory) (cmd *cobra.Command) {
 	cmd = f.NewCommand("source",
 		factory.WithHelp("outputs valid a generated .zshrc based on your configuration", ""),
 		factory.WithAnnotationKeys("IsCore"),

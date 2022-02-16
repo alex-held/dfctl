@@ -7,7 +7,7 @@ import (
 	"github.com/alex-held/dfctl/pkg/factory"
 )
 
-func NewZshCommand(f factory.Factory) (cmd *cobra.Command) {
+func NewZshCommand(f *factory.Factory) (cmd *cobra.Command) {
 	cmd = f.NewCommand("zsh",
 		factory.WithHelp("interacts with the zsh configuration", ""),
 		factory.WithSubcommands(newSourceCommand),

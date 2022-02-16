@@ -7,7 +7,7 @@ import (
 	"github.com/alex-held/dfctl/pkg/zsh"
 )
 
-func newPluginsInstallCommand(factory.Factory) (cmd *cobra.Command) {
+func newPluginsInstallCommand(*factory.Factory) (cmd *cobra.Command) {
 	cmd = &cobra.Command{
 		Use:   "install [repo]",
 		Short: "installs a plugin locally",

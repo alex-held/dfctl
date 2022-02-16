@@ -8,7 +8,7 @@ import (
 	"github.com/alex-held/dfctl/pkg/factory"
 )
 
-func NewStatusCommand(f factory.Factory) *cobra.Command {
+func NewStatusCommand(f *factory.Factory) *cobra.Command {
 	cmd := f.NewCommand("status",
 		factory.WithHelp("shows dfctl status information", ""),
 	)

@@ -11,7 +11,7 @@ import (
 	"github.com/alex-held/dfctl/pkg/zsh"
 )
 
-func newViewCommand(f factory.Factory) (cmd *cobra.Command) {
+func newViewCommand(f *factory.Factory) (cmd *cobra.Command) {
 	cmd = f.NewCommand("view",
 		factory.WithHelp("view the current configuation", "displays a formatted version of the $DFCTL_CONFIG file"),
 	)

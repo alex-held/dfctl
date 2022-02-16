@@ -37,7 +37,7 @@ func ConfigureLogger(levelString string) {
 	zerolog.SetGlobalLevel(level)
 }
 
-func NewRootCommand(f factory.Factory) (cmd *cobra.Command) {
+func NewRootCommand(f *factory.Factory) (cmd *cobra.Command) {
 	cmd = f.NewCommand("dfctl [flags] [command]",
 		factory.WithHelp("dotfiles and development environment manager", ""),
 		factory.WithGroupedSubcommands("module commands", zsh.NewZshCommand),

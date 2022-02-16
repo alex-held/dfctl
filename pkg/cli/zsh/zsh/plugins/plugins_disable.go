@@ -9,7 +9,7 @@ import (
 	"github.com/alex-held/dfctl/pkg/zsh"
 )
 
-func newPluginsDisableCommand(factory.Factory) (cmd *cobra.Command) {
+func newPluginsDisableCommand(*factory.Factory) (cmd *cobra.Command) {
 	cmd = &cobra.Command{
 		Use: "disable [plugin1 plugin2 plugin3]",
 	}

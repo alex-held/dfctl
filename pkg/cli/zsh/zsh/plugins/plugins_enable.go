@@ -9,7 +9,7 @@ import (
 	"github.com/alex-held/dfctl/pkg/zsh"
 )
 
-func newPluginsEnableCommand(factory.Factory) (cmd *cobra.Command) {
+func newPluginsEnableCommand(*factory.Factory) (cmd *cobra.Command) {
 	cmd = &cobra.Command{
 		Use: "enable [plugin1 plugin2 plugin3]",
 	}

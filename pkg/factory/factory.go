@@ -3,9 +3,9 @@ package factory
 import (
 	"fmt"
 	"io"
-	"os"
 	"reflect"
 
+	"github.com/cli/cli/pkg/iostreams"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
@@ -14,35 +14,28 @@ import (
 	"github.com/alex-held/dfctl/pkg/globals"
 )
 
-func GetFS() afero.Fs {
-	return fac.GetFS()
-}
-func GetSteams() *Streams {
-	return fac.GetStreams()
-}
+var Default = BuildFactory()
 
-var DefaultFactory = BuildFactory()
-var fac = DefaultFactory
-
-type factory struct {
+type factoryBuilder struct {
 	*FactoryConfig
 }
 
-func (f *factory) GetFS() afero.Fs {
-	return f.FS
+type Factory struct {
+	Streams *iostreams.IOStreams
+	Fs      afero.Fs
 }
 
-func (f *factory) GetStreams() *Streams {
-	return f.Streams
+func (fb *factoryBuilder) Build() *Factory {
+	return &Factory{
+		Streams: fb.Streams,
+		Fs:      fb.FS,
+	}
 }
 
 type CommandConfig struct {
 	Flag        *FlagsConfig
 	Help        *helpConfig
 	Name        string
-	FS          afero.Fs
-	Streams     *Streams
-	Factory     *factory
 	Subcommands CommandFactoryGroups
 	Group       string
 	Annotations map[string]string
@@ -158,7 +151,7 @@ func WithHelp(short, long string) CommandOption {
 }
 
 type CommandOption func(c *CommandConfig)
-type CommandFactoryFn func(f Factory) *cobra.Command
+type CommandFactoryFn func(f *Factory) *cobra.Command
 
 func WithSubcommands(fns ...CommandFactoryFn) CommandOption {
 	return WithGroupedSubcommands("core commands", fns...)
@@ -175,8 +168,8 @@ func WithGroupedSubcommands(group string, fns ...CommandFactoryFn) CommandOption
 	}
 }
 
-func (c *CommandConfig) CobraCommand() *cobra.Command {
-	cmd := &cobra.Command{
+func (c *CommandConfig) Build(f *Factory) (cmd *cobra.Command) {
+	cmd = &cobra.Command{
 		Use:   c.Name,
 		Short: c.Help.Short,
 		Long:  c.Help.Long,
@@ -205,7 +198,7 @@ func (c *CommandConfig) CobraCommand() *cobra.Command {
 
 	for group, factoryFns := range c.Subcommands {
 		for _, factoryFn := range factoryFns {
-			subcommand := factoryFn(c.Factory)
+			subcommand := factoryFn(f)
 			if subcommand.Annotations == nil {
 				subcommand.Annotations = map[string]string{}
 			}
@@ -217,17 +210,12 @@ func (c *CommandConfig) CobraCommand() *cobra.Command {
 	return cmd
 }
 
-func (c *CommandConfig) Build() (cmd *cobra.Command) {
-	cmd = c.CobraCommand()
-	return cmd
-}
-
 type helpConfig struct {
 	Short string
 	Long  string
 }
 
-func (f *factory) NewCommand(use string, opts ...CommandOption) (cmd *cobra.Command) {
+func (f *Factory) NewCommand(use string, opts ...CommandOption) (cmd *cobra.Command) {
 	cfg := &CommandConfig{
 		Name: use,
 		Flag: &FlagsConfig{
@@ -236,10 +224,7 @@ func (f *factory) NewCommand(use string, opts ...CommandOption) (cmd *cobra.Comm
 			Flags:      map[string]func(*pflag.FlagSet) (value interface{}){},
 			Values:     FlagValueStore{},
 		},
-		FS:          f.FS,
-		Streams:     f.Streams,
 		Help:        &helpConfig{},
-		Factory:     f,
 		Subcommands: CommandFactoryGroups{},
 	}
 
@@ -247,24 +232,27 @@ func (f *factory) NewCommand(use string, opts ...CommandOption) (cmd *cobra.Comm
 		opt(cfg)
 	}
 
-	cmd = cfg.Build()
+	cmd = cfg.Build(f)
 	return cmd
-}
-
-type Factory interface {
-	GetFS() afero.Fs
-	GetStreams() *Streams
-	NewCommand(use string, opts ...CommandOption) *cobra.Command
 }
 
 type FactoryConfig struct {
 	FS      afero.Fs
-	Streams *Streams
+	Streams *iostreams.IOStreams
 }
 
 type FactoryOption func(c *FactoryConfig)
 
-func WithStreams(streams *Streams) FactoryOption {
+func WithStreamWriter(stdout, stderr io.Writer, stdin io.ReadCloser) FactoryOption {
+	stream := iostreams.System()
+	stream.In = stdin
+	stream.Out = stdout
+	stream.ErrOut = stderr
+
+	return WithStreams(stream)
+}
+
+func WithStreams(streams *iostreams.IOStreams) FactoryOption {
 	return func(c *FactoryConfig) {
 		c.Streams = streams
 	}
@@ -276,12 +264,9 @@ func WithFS(fs afero.Fs) FactoryOption {
 	}
 }
 
-func DefaultStreams() *Streams {
-	return &Streams{
-		Stdin:  os.Stdin,
-		Stdout: os.Stdout,
-		Stderr: os.Stderr,
-	}
+func DefaultStreams() *iostreams.IOStreams {
+	streams := iostreams.System()
+	return streams
 }
 
 var defaultFactoryOptions = []FactoryOption{
@@ -289,16 +274,11 @@ var defaultFactoryOptions = []FactoryOption{
 	WithStreams(DefaultStreams()),
 }
 
-func BuildFactory(opts ...FactoryOption) Factory {
+func BuildFactory(opts ...FactoryOption) *Factory {
 	cfg := &FactoryConfig{}
 	for _, opt := range defaultFactoryOptions {
 		opt(cfg)
 	}
-	return &factory{cfg}
-}
-
-type Streams struct {
-	Stdout io.Writer
-	Stderr io.Writer
-	Stdin  io.Reader
+	fb := &factoryBuilder{cfg}
+	return fb.Build()
 }

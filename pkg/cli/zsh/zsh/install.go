@@ -8,7 +8,7 @@ import (
 	"github.com/alex-held/dfctl/pkg/zsh"
 )
 
-func newInstallCommand(f factory.Factory) (cmd *cobra.Command) {
+func newInstallCommand(f *factory.Factory) (cmd *cobra.Command) {
 	cmd = &cobra.Command{
 		Use: "install",
 	}
@@ -19,7 +19,7 @@ func newInstallCommand(f factory.Factory) (cmd *cobra.Command) {
 	return cmd
 }
 
-func runInstallCommand(f factory.Factory) (err error) {
+func runInstallCommand(f *factory.Factory) (err error) {
 	installables := zsh.ListInstallables()
 	for _, installable := range installables {
 		if !installable.IsInstalled() {

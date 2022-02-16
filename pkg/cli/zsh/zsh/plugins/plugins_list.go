@@ -13,7 +13,7 @@ import (
 	"github.com/alex-held/dfctl/pkg/zsh"
 )
 
-func newPluginsListCommand(f factory.Factory) (cmd *cobra.Command) {
+func newPluginsListCommand(f *factory.Factory) (cmd *cobra.Command) {
 	cmd = &cobra.Command{
 		Use: "list",
 	}

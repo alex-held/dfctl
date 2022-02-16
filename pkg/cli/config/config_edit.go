@@ -10,7 +10,7 @@ import (
 	"github.com/alex-held/dfctl/pkg/zsh"
 )
 
-func newEditCommand(f factory.Factory) (cmd *cobra.Command) {
+func newEditCommand(f *factory.Factory) (cmd *cobra.Command) {
 	cmd = f.NewCommand("edit",
 		factory.WithHelp("edit the current configuration", "opens an editor buffer to edit the current $DFCTL_CONFIG_FILE and saves the modified buffer back to disk"),
 	)
