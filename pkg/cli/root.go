@@ -15,6 +15,7 @@ import (
 	"github.com/spf13/pflag"
 
 	"github.com/alex-held/dfctl/pkg/cli/config"
+	"github.com/alex-held/dfctl/pkg/cli/extension"
 	"github.com/alex-held/dfctl/pkg/cli/status"
 	"github.com/alex-held/dfctl/pkg/cli/version"
 	"github.com/alex-held/dfctl/pkg/cli/zsh/zsh"
@@ -41,6 +42,7 @@ func NewRootCommand(f *factory.Factory) (cmd *cobra.Command) {
 	cmd = f.NewCommand("dfctl [flags] [command]",
 		factory.WithHelp("dotfiles and development environment manager", ""),
 		factory.WithGroupedSubcommands("module commands", zsh.NewZshCommand),
+		factory.WithGroupedSubcommands("extension commands", extension.NewExtensionCommand),
 		factory.WithGroupedSubcommands("environment commands", config.NewConfigCommand),
 		factory.WithGroupedSubcommands("status commands", status.NewStatusCommand, version.NewVersionCommand),
 	)

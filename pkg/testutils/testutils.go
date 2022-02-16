@@ -7,6 +7,8 @@ import (
 
 	"github.com/rs/zerolog"
 	//	"github.com/sudo-bcli/color"
+
+	"github.com/alex-held/dfctl/pkg/color"
 )
 
 func Logger(t *testing.T) (logger zerolog.Logger) {
@@ -15,9 +17,9 @@ func Logger(t *testing.T) (logger zerolog.Logger) {
 			fieldName := i.(string)
 			switch fieldName {
 			case "testcase":
-				fieldName = Colorize(fieldName, colorRed, Bold)
+				fieldName = color.Colorize(fieldName, color.Red, color.Bold)
 			default:
-				fieldName = Colorize(fieldName, Bold)
+				fieldName = color.Colorize(fieldName, color.Bold)
 			}
 			return fmt.Sprintf("%s=", fieldName)
 		}

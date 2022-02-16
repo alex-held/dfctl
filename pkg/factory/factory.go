@@ -5,11 +5,12 @@ import (
 	"io"
 	"reflect"
 
-	"github.com/cli/cli/pkg/iostreams"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+
+	"github.com/alex-held/dfctl/pkg/iostreams"
 
 	"github.com/alex-held/dfctl/pkg/globals"
 )
@@ -243,11 +244,11 @@ type FactoryConfig struct {
 
 type FactoryOption func(c *FactoryConfig)
 
-func WithStreamWriter(stdout, stderr io.Writer, stdin io.ReadCloser) FactoryOption {
-	stream := iostreams.System()
+func WithStreamWriter(stdout, stderr io.WriteCloser, stdin io.ReadCloser) FactoryOption {
+	stream := iostreams.Default()
 	stream.In = stdin
 	stream.Out = stdout
-	stream.ErrOut = stderr
+	stream.Err = stderr
 
 	return WithStreams(stream)
 }
@@ -264,14 +265,9 @@ func WithFS(fs afero.Fs) FactoryOption {
 	}
 }
 
-func DefaultStreams() *iostreams.IOStreams {
-	streams := iostreams.System()
-	return streams
-}
-
 var defaultFactoryOptions = []FactoryOption{
 	WithFS(afero.NewOsFs()),
-	WithStreams(DefaultStreams()),
+	WithStreams(iostreams.Default()),
 }
 
 func BuildFactory(opts ...FactoryOption) *Factory {

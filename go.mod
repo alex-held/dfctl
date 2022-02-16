@@ -6,6 +6,7 @@ require (
 	github.com/BurntSushi/toml v1.0.0
 	github.com/ahmetb/go-linq v3.0.0+incompatible
 	github.com/cli/cli v1.14.0
+	github.com/cli/safeexec v1.0.0
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/kr/text v0.2.0
 	github.com/olekukonko/tablewriter v0.0.5
@@ -23,13 +24,13 @@ require (
 	github.com/ProtonMail/go-crypto v0.0.0-20210428141323-04723f9f07d7 // indirect
 	github.com/acomagu/bufpipe v1.0.3 // indirect
 	github.com/briandowns/spinner v1.11.1 // indirect
-	github.com/cli/safeexec v1.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emirpasic/gods v1.12.0 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
 	github.com/go-git/go-billy/v5 v5.3.1 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
+	github.com/henvic/httpretty v0.0.6 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
@@ -44,9 +45,12 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
+	github.com/shurcooL/githubv4 v0.0.0-20200928013246-d292edc3691b // indirect
+	github.com/shurcooL/graphql v0.0.0-20181231061246-d48a9a75455f // indirect
 	github.com/xanzy/ssh-agent v0.3.0 // indirect
 	golang.org/x/crypto v0.0.0-20211215165025-cf75a172585e // indirect
 	golang.org/x/net v0.0.0-20210813160813-60bc85c4be6d // indirect
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20211205182925-97ca703d548d // indirect
 	golang.org/x/term v0.0.0-20210503060354-a79de5458b56 // indirect
 	golang.org/x/text v0.3.7 // indirect
