@@ -1,4 +1,4 @@
-package extension
+package list
 
 import (
 	"github.com/spf13/cobra"
@@ -7,11 +7,12 @@ import (
 	"github.com/alex-held/dfctl/pkg/factory"
 )
 
-func newListCommand(f *factory.Factory) *cobra.Command {
+func NewCommand(f *factory.Factory) *cobra.Command {
 	cmd := f.NewCommand("list")
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		em := extensions.NewManager(f)
 		list := em.List(true)
+
 		for _, extension := range list {
 			name := extension.Name()
 			_, _ = cmd.OutOrStdout().Write([]byte(name + "\n"))

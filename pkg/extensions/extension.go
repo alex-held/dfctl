@@ -24,7 +24,8 @@ type extension struct {
 }
 
 func (e *extension) Name() string {
-	return strings.TrimPrefix(filepath.Base(e.path), "dfctl-")
+	name := strings.TrimPrefix(filepath.Base(e.path), "dfctl-")
+	return name
 }
 
 func (e *extension) Path() string {

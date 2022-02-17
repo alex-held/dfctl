@@ -41,9 +41,12 @@ func (m *Manager) List(includeMetadata bool) (extensions []Extension) {
 	if err != nil {
 		return extensions
 	}
+
 	for _, ext := range exts {
-		extensions = append(extensions, &ext)
+		var extension = ext
+		extensions = append(extensions, &extension)
 	}
+
 	return extensions
 }
 
