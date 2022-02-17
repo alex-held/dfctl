@@ -7,10 +7,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/alex-held/dfctl-kit/pkg/dflog"
 	"github.com/cli/cli/pkg/iostreams"
 	"github.com/kr/text"
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -36,9 +34,6 @@ func NewRootCommand(f *factory.Factory) (cmd *cobra.Command) {
 	)
 
 	cmd.PersistentFlags().String("level", "info", "set the log level [ trace | debug | info | warn | error | fatal ]")
-	cmd.PersistentPreRun = func(c *cobra.Command, _ []string) {
-		initialize(c)
-	}
 
 	cmd.Aliases = []string{"dfctl [flags]", "dfctl [command]"}
 	cmd.Example = `
@@ -180,7 +175,6 @@ func nestedSuggestFunc(command *cobra.Command, arg string) {
 }
 
 func rootUsageFunc(command *cobra.Command) error {
-	initialize(command)
 
 	command.Printf("Usage:  %s", command.UseLine())
 
@@ -232,17 +226,7 @@ func dedent(s string) string {
 
 var hasFailed = false
 
-func initialize(command *cobra.Command) {
-	level, err := command.Flags().GetString("level")
-	if err != nil {
-		dflog.ConfigureWithLevel(zerolog.InfoLevel)
-		return
-	}
-	dflog.ConfigureWithLevelString(level)
-}
-
 func rootHelpFunc(command *cobra.Command, args []string) {
-	initialize(command)
 
 	streams := iostreams.System()
 	cs := streams.ColorScheme()

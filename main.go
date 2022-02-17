@@ -7,5 +7,6 @@ import (
 
 func main() {
 	app := cli.New()
+
 	errors.Check(app.Execute())
 }
