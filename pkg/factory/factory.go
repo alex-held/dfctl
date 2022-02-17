@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
-	"github.com/alex-held/dfctl/pkg/iostreams"
+	"github.com/alex-held/dfctl-kit/pkg/iostreams"
 
 	"github.com/alex-held/dfctl/pkg/globals"
 )
@@ -273,6 +273,9 @@ var defaultFactoryOptions = []FactoryOption{
 func BuildFactory(opts ...FactoryOption) *Factory {
 	cfg := &FactoryConfig{}
 	for _, opt := range defaultFactoryOptions {
+		opt(cfg)
+	}
+	for _, opt := range opts {
 		opt(cfg)
 	}
 	fb := &factoryBuilder{cfg}

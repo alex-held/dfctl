@@ -6,7 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/alex-held/dfctl/pkg/dfpath"
+	"github.com/alex-held/dfctl-kit/pkg/env"
+
 	"github.com/alex-held/dfctl/pkg/factory"
 	"github.com/alex-held/dfctl/pkg/zsh"
 )
@@ -21,7 +22,7 @@ func newViewCommand(f *factory.Factory) (cmd *cobra.Command) {
 			return err
 		}
 		formatted, err := cfg.Format(func(f *zsh.ConfigFormatter) {
-			f.ConfigFileType = filepath.Ext(dfpath.ConfigFile())
+			f.ConfigFileType = filepath.Ext(env.ConfigFile())
 		})
 		if err != nil {
 			return err

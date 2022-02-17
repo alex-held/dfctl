@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/alex-held/dfctl/pkg/dfpath"
+	"github.com/alex-held/dfctl-kit/pkg/env"
 )
 
 type OMZPlugin struct {
@@ -64,7 +64,7 @@ func (p *OMZPlugin) IsInstalled() bool {
 }
 
 func (p *OMZPlugin) Path() string {
-	return filepath.Join(dfpath.OMZ(), "plugins", p.Id())
+	return filepath.Join(env.OMZ(), "plugins", p.Id())
 }
 
 func (p *OMZPlugin) GetKind() InstallableKind {

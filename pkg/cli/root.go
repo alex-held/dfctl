@@ -7,6 +7,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/alex-held/dfctl-kit/pkg/dflog"
 	"github.com/cli/cli/pkg/iostreams"
 	"github.com/kr/text"
 	"github.com/rs/zerolog"
@@ -14,29 +15,16 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
+	color2 "github.com/alex-held/dfctl-kit/pkg/color"
+
 	"github.com/alex-held/dfctl/pkg/cli/config"
 	"github.com/alex-held/dfctl/pkg/cli/extension"
 	"github.com/alex-held/dfctl/pkg/cli/status"
 	"github.com/alex-held/dfctl/pkg/cli/version"
 	"github.com/alex-held/dfctl/pkg/cli/zsh/zsh"
-	color2 "github.com/alex-held/dfctl/pkg/color"
 	"github.com/alex-held/dfctl/pkg/factory"
 	"github.com/alex-held/dfctl/pkg/globals"
 )
-
-func ConfigureLogger(levelString string) {
-	level, err := zerolog.ParseLevel(levelString)
-	if err != nil {
-		level = zerolog.InfoLevel
-	}
-	w := zerolog.NewConsoleWriter(func(w *zerolog.ConsoleWriter) {
-		w.PartsExclude = []string{zerolog.CallerFieldName, zerolog.TimestampFieldName}
-		w.PartsOrder = []string{zerolog.LevelFieldName, zerolog.MessageFieldName}
-	})
-
-	log.Logger = zerolog.New(w)
-	zerolog.SetGlobalLevel(level)
-}
 
 func NewRootCommand(f *factory.Factory) (cmd *cobra.Command) {
 	cmd = f.NewCommand("dfctl [flags] [command]",
@@ -247,10 +235,10 @@ var hasFailed = false
 func initialize(command *cobra.Command) {
 	level, err := command.Flags().GetString("level")
 	if err != nil {
-		ConfigureLogger("info")
+		dflog.ConfigureWithLevel(zerolog.InfoLevel)
 		return
 	}
-	ConfigureLogger(level)
+	dflog.ConfigureWithLevelString(level)
 }
 
 func rootHelpFunc(command *cobra.Command, args []string) {

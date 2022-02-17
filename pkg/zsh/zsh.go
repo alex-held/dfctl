@@ -6,7 +6,7 @@ import (
 
 	"github.com/ahmetb/go-linq"
 
-	"github.com/alex-held/dfctl/pkg/dfpath"
+	"github.com/alex-held/dfctl-kit/pkg/env"
 )
 
 func Source() (rendered string, err error) {
@@ -40,7 +40,7 @@ func render(cfg *ConfigSpec) (rendered string, err error) {
 		OMZConfigs  map[string]string
 		ZshOptions  map[string]bool
 	}{
-		OMZ_HOME:    dfpath.OMZ(),
+		OMZ_HOME:    env.OMZ(),
 		Theme:       cfg.Theme,
 		Paths:       cfg.Configs.Paths,
 		Exports:     cfg.Exports,

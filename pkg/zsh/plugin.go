@@ -10,7 +10,8 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/rs/zerolog/log"
 
-	"github.com/alex-held/dfctl/pkg/dfpath"
+	"github.com/alex-held/dfctl-kit/pkg/env"
+
 	"github.com/alex-held/dfctl/pkg/factory"
 )
 
@@ -109,7 +110,7 @@ func (p *Plugin) Clone() (pluginPath string, err error) {
 	var url string
 
 	name := filepath.Base(p.Name)
-	pluginsDir := dfpath.Plugins()
+	pluginsDir := env.Plugins()
 	pluginPath = filepath.Join(pluginsDir, name)
 
 	switch p.Kind {
@@ -174,9 +175,9 @@ func BuildRepositoryURI(repo string, kind RepoKind) string {
 func (p *Plugin) Path() string {
 	switch p.Kind {
 	case PLUGIN_OMZ:
-		return filepath.Join(dfpath.OMZ(), "plugins", p.Name)
+		return filepath.Join(env.OMZ(), "plugins", p.Name)
 	default:
-		return filepath.Join(dfpath.Plugins(), p.Name)
+		return filepath.Join(env.Plugins(), p.Name)
 	}
 }
 

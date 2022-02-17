@@ -7,7 +7,7 @@ import (
 	"github.com/ahmetb/go-linq"
 	"github.com/rs/zerolog/log"
 
-	"github.com/alex-held/dfctl/pkg/dfpath"
+	"github.com/alex-held/dfctl-kit/pkg/env"
 )
 
 func InstallThemes(cfg *ConfigSpec) (installed map[Theme]InstallResult) {
@@ -68,7 +68,7 @@ func MustGetOMZPlugins() (plugins []Installable) {
 }
 
 func GetOMZPlugins() (plugins []Installable, err error) {
-	path := filepath.Join(dfpath.OMZ(), "plugins")
+	path := filepath.Join(env.OMZ(), "plugins")
 	dirEntries, err := os.ReadDir(path)
 	if err != nil {
 		return plugins, err

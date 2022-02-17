@@ -9,19 +9,20 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"sync"
 
+	"github.com/alex-held/dfctl-kit/pkg/system"
 	"github.com/cli/cli/pkg/findsh"
 	"github.com/cli/safeexec"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/afero"
 	"gopkg.in/yaml.v3"
 
-	"github.com/alex-held/dfctl/pkg/iostreams"
+	"github.com/alex-held/dfctl-kit/pkg/iostreams"
 
-	"github.com/alex-held/dfctl/pkg/dfpath"
+	"github.com/alex-held/dfctl-kit/pkg/env"
+
 	"github.com/alex-held/dfctl/pkg/factory"
 	"github.com/alex-held/dfctl/pkg/git"
 )
@@ -493,12 +494,13 @@ func (m *Manager) installBin(repo git.Repository) error {
 // }
 
 func (m *Manager) platform() (platform string, ext string) {
-	return fmt.Sprintf("%s-%s", runtime.GOOS, runtime.GOARCH), ""
+	ri := system.Get()
+	return fmt.Sprintf("%s-%s", ri.OS, ri.Arch), ""
 }
 
 func NewManager(factory *factory.Factory) ExtensionManager {
 	return &Manager{
-		dataDir:    dfpath.Extensions(),
+		dataDir:    env.Extensions(),
 		lookPath:   safeexec.LookPath,
 		findSh:     findsh.Find,
 		newCommand: exec.Command,

@@ -13,7 +13,8 @@ import (
 	"github.com/spf13/afero"
 	"gopkg.in/yaml.v3"
 
-	"github.com/alex-held/dfctl/pkg/dfpath"
+	"github.com/alex-held/dfctl-kit/pkg/env"
+
 	"github.com/alex-held/dfctl/pkg/factory"
 )
 
@@ -275,7 +276,7 @@ func SaveToPath(cfg *ConfigSpec, path string) (err error) {
 }
 
 func Save(cfg *ConfigSpec) (err error) {
-	return SaveToPath(cfg, dfpath.ConfigFile())
+	return SaveToPath(cfg, env.ConfigFile())
 }
 
 func LoadFromPath(path string) (cfg *ConfigSpec, err error) {
@@ -330,9 +331,9 @@ func Default() (cfg *ConfigSpec) {
 	}
 }
 func MustLoad() (cfg *ConfigSpec) {
-	return MustLoadFromPath(dfpath.ConfigFile())
+	return MustLoadFromPath(env.ConfigFile())
 }
 
 func Load() (cfg *ConfigSpec, err error) {
-	return LoadFromPath(dfpath.ConfigFile())
+	return LoadFromPath(env.ConfigFile())
 }

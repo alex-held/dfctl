@@ -10,7 +10,7 @@ import (
 )
 
 func TestManager_List(t *testing.T) {
-	manager := NewManager(factory.Default)
+	manager := NewManager(factory.Default).(*Manager)
 	list, err := manager.list(true)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, list)

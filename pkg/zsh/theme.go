@@ -7,7 +7,7 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/rs/zerolog/log"
 
-	"github.com/alex-held/dfctl/pkg/dfpath"
+	"github.com/alex-held/dfctl-kit/pkg/env"
 )
 
 type Theme struct {
@@ -39,9 +39,9 @@ func (theme *Theme) IsInstalled() bool {
 
 func (theme *Theme) Path() string {
 	if theme.Kind == PLUGIN_OMZ {
-		return filepath.Join(dfpath.OMZ(), "themes", theme.Name)
+		return filepath.Join(env.OMZ(), "themes", theme.Name)
 	}
-	return filepath.Join(dfpath.Themes(), theme.Name)
+	return filepath.Join(env.Themes(), theme.Name)
 }
 
 func (theme *Theme) Install() (res InstallResult) {
